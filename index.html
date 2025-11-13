@@ -1,369 +1,229 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Innovators User Panel</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --dark-bg: #121212;
-            --primary-yellow: #FFC107;
-            --primary-red: #E53935;
-            --card-bg: #1E1E1E;
-            --text-light: #f0f0f0;
-            --text-dark: #333;
-            --input-bg: #2a2a2a;
-        }
 
-        body {
-            margin: 0;
-            font-family: 'Poppins', sans-serif;
-            background-color: var(--dark-bg);
-            color: var(--text-light);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-        }
-        
-        .page {
-            display: none;
-            opacity: 0;
-            transition: opacity 0.5s ease-in-out;
-            flex-direction: column;
-            width: 100%;
-            min-height: 100vh;
-            box-sizing: border-box;
-        }
-        
-        .page.visible {
-            display: flex;
-            opacity: 1;
-        }
-        
-        /* --- Landing Page Styles --- */
-        #landing-page {
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            padding: 20px;
-        }
-
-        #landing-page h1 {
-            font-size: 3rem;
-            color: var(--text-light);
-        }
-
-        #get-leads-btn {
-            padding: 20px 40px;
-            font-size: 1.5rem;
-            font-weight: 600;
-            background: linear-gradient(45deg, var(--primary-red), var(--primary-yellow));
-            color: var(--text-dark);
-            border: none;
-            border-radius: 15px;
-            cursor: pointer;
-            text-align: center;
-            transition: transform 0.2s, box-shadow 0.3s;
-            margin-top: 20px;
-        }
-
-        #get-leads-btn:hover {
-            transform: scale(1.05);
-            box-shadow: 0 8px 30px rgba(0,0,0,0.5);
-        }
-
-        /* --- Password Modal --- */
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.8);
-            backdrop-filter: blur(5px);
-            display: none; /* Hidden by default */
-            align-items: center;
-            justify-content: center;
-            z-index: 2000;
-        }
-        .modal-overlay.visible {
-            display: flex;
-        }
-        .modal-content {
-            background: var(--card-bg);
-            padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.6);
-            width: 90%;
-            max-width: 400px;
-            text-align: center;
-            border-top: 3px solid var(--primary-red);
-        }
-        .modal-content h3 {
-            margin-top: 0;
-            color: var(--primary-red);
-            font-size: 1.5rem;
-        }
-        .modal-input {
-            width: 100%;
-            padding: 12px;
-            margin-top: 10px;
-            background-color: var(--input-bg);
-            border: 1px solid #444;
-            border-radius: 8px;
-            color: var(--text-light);
-            font-size: 1.2rem;
-            box-sizing: border-box;
-            text-align: center;
-        }
-        .modal-error {
-            color: var(--primary-red);
-            margin-top: 10px;
-            height: 20px;
-        }
-        .modal-buttons {
-            margin-top: 20px;
-        }
-        .modal-btn {
-            width: 100%;
-            padding: 12px;
-            font-size: 1rem;
-            font-weight: 600;
-            border: none;
-            border-radius: 50px;
-            cursor: pointer;
-            background: linear-gradient(45deg, #c62828, var(--primary-red));
-            color: var(--text-light);
-        }
-
-        /* --- Leads Display Page Styles --- */
-        .top-bar {
-            background: rgba(30, 30, 30, 0.8);
-            backdrop-filter: blur(10px);
-            color: white;
-            padding: 15px 20px;
-            font-size: 1.5rem;
-            font-weight: 600;
-            width: 100%;
-            box-sizing: border-box;
-            text-align: center;
-            border-bottom: 2px solid var(--primary-red);
-        }
-        
-        .content {
-            padding: 20px;
-            flex-grow: 1;
-        }
-
-        .table-container {
-            width: 100%;
-            overflow-x: auto;
-            background-color: var(--card-bg);
-            border-radius: 10px;
-            padding: 10px;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.5);
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            min-width: 800px;
-        }
-        th, td {
-            padding: 12px 15px;
-            text-align: left;
-            border-bottom: 1px solid #333;
-            white-space: nowrap;
-        }
-        th {
-            background-color: var(--primary-red);
-            color: var(--text-light);
-            font-weight: 600;
-            position: sticky;
-            top: 0;
-        }
-        tr:last-child td {
-            border-bottom: none;
-        }
-        tr:nth-child(even) {
-            background-color: #2a2a2a;
-        }
-        
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Dixit IVF - Prayagraj's Most Trusted IVF Center</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<style>
+      .material-symbols-outlined {
+        font-variation-settings:
+        'FILL' 0,
+        'wght' 400,
+        'GRAD' 0,
+        'opsz' 24
+      }
     </style>
-</head>
-<body>
-
-    <!-- Landing Page (Initially Visible) -->
-    <div id="landing-page" class="page visible">
-        <div>
-            <h1>User Panel</h1>
-            <button id="get-leads-btn">Get Leads</button>
-        </div>
-    </div>
-    
-    <!-- Leads Display Page (Initially Hidden) -->
-    <div id="leads-display-page" class="page">
-        <div class="top-bar">
-            <span>Available Leads</span>
-        </div>
-        <div class="content">
-            <div class="table-container" id="leads-table-container">
-                <!-- Leads table will be inserted here by JavaScript -->
-            </div>
-        </div>
-    </div>
-    
-    <!-- Password Modal (Initially Hidden) -->
-    <div id="password-modal" class="modal-overlay">
-        <div class="modal-content">
-            <h3>Verification Required</h3>
-            <p>Please enter a password to view leads.</p>
-            <input type="password" id="password-input" class="modal-input" placeholder="****">
-            <div id="password-error" class="modal-error"></div>
-            <div class="modal-buttons">
-                <button id="password-submit-btn" class="modal-btn">Verify</button>
-            </div>
-        </div>
-    </div>
-
-
-    <script type="module">
-        // IMPORTANT: This Firebase configuration MUST be the same as your Admin Panel.
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
-        import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js";
-        
-        const firebaseConfig = {
-            apiKey: "AIzaSyBjlgKJDXdzZ3CwknhmjWF6nWqJxvnluJA",
-            authDomain: "webs-60171.firebaseapp.com",
-            databaseURL: "https://webs-60171-default-rtdb.firebaseio.com",
-            projectId: "webs-60171",
-            storageBucket: "webs-60171.appspot.com",
-            messagingSenderId: "409682548143",
-            appId: "1:409682548143:web:66e6ca40b22af3b2354b5a",
-            measurementId: "G-CE0XKCC30Q"
-        };
-
-        // Initialize Firebase
-        const app = initializeApp(firebaseConfig);
-        const database = getDatabase(app);
-
-        // Get references to HTML elements
-        const landingPage = document.getElementById('landing-page');
-        const leadsDisplayPage = document.getElementById('leads-display-page');
-        const passwordModal = document.getElementById('password-modal');
-        const getLeadsBtn = document.getElementById('get-leads-btn');
-        const passwordSubmitBtn = document.getElementById('password-submit-btn');
-        const passwordInput = document.getElementById('password-input');
-        const passwordError = document.getElementById('password-error');
-        
-        // --- Event Listeners ---
-
-        // Show password modal when "Get Leads" is clicked
-        getLeadsBtn.addEventListener('click', () => {
-            passwordModal.classList.add('visible');
-            passwordInput.focus();
-        });
-
-        // Verify password on submit button click
-        passwordSubmitBtn.addEventListener('click', verifyPassword);
-        
-        // Also verify on pressing "Enter" in the password field
-        passwordInput.addEventListener('keyup', (event) => {
-            if (event.key === 'Enter') {
-                verifyPassword();
-            }
-        });
-
-        // --- Core Functions ---
-        
-        function verifyPassword() {
-            const enteredPassword = passwordInput.value;
-            passwordError.textContent = ''; // Clear previous errors
-
-            if (!enteredPassword) {
-                passwordError.textContent = 'Password cannot be empty.';
-                return;
-            }
-
-            // Get the list of valid passwords from the database (set by the admin)
-            const passwordsRef = ref(database, 'adminPasswords');
-            
-            onValue(passwordsRef, (snapshot) => {
-                if (snapshot.exists()) {
-                    const validPasswords = Object.values(snapshot.val());
-                    
-                    // Check if the entered password is in the list of valid passwords
-                    if (validPasswords.includes(enteredPassword)) {
-                        showLeads();
-                    } else {
-                        passwordError.textContent = 'Incorrect Password. Please try again.';
-                    }
-                } else {
-                    // This is a fallback case if the admin hasn't set any passwords yet.
-                    passwordError.textContent = 'No admin passwords found. Please contact admin.';
-                }
-            }, { onlyOnce: true }); // We only need to check once
-        }
-
-        function showLeads() {
-            // Hide the modal and landing page
-            passwordModal.classList.remove('visible');
-            landingPage.classList.remove('visible');
-            
-            // Show the leads display page
-            leadsDisplayPage.classList.add('visible');
-            
-            // Fetch and display the leads data
-            displayLeadsData();
-        }
-
-        function displayLeadsData() {
-            const container = document.getElementById('leads-table-container');
-            container.innerHTML = '<p>Loading leads...</p>';
-            
-            const leadsRef = ref(database, 'leads');
-            
-            onValue(leadsRef, (snapshot) => {
-                container.innerHTML = ''; 
-                if (!snapshot.exists()) {
-                    container.innerHTML = '<p>No leads are available at the moment.</p>';
-                    return;
-                }
-
-                const data = snapshot.val();
-                // Define headers for the user view (can be different from admin view)
-                const headers = ['name', 'mobile', 'age', 'address', 'qualification'];
-                
-                const table = document.createElement('table');
-                const thead = table.createTHead();
-                const tbody = table.createTBody();
-
-                // Create table header row
-                const headerRow = thead.insertRow();
-                headers.forEach(headerText => {
-                    const th = document.createElement('th');
-                    // Capitalize the first letter for better readability
-                    th.textContent = headerText.charAt(0).toUpperCase() + headerText.slice(1);
-                    headerRow.appendChild(th);
-                });
-
-                // Get keys and reverse them to show the newest leads first
-                const keys = Object.keys(data).reverse();
-                for (const key of keys) {
-                    const item = data[key];
-                    const row = tbody.insertRow();
-                    headers.forEach(header => {
-                        const cell = row.insertCell();
-                        cell.textContent = item[header] || 'N/A';
-                    });
-                }
-                container.appendChild(table);
-            });
-        }
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#A5D6A7", /* Soft Green */
+              "background-light": "#F8F9FA", /* Off-White */
+              "background-dark": "#102218",
+              "text-primary": "#2F4F4F", /* Dark Slate Grey */
+              "text-secondary": "#5a7a7a",
+              "accent": "#E0F7FA", /* Light Blue */
+            },
+            fontFamily: {
+              "display": ["Manrope", "sans-serif"]
+            },
+            borderRadius: {"DEFAULT": "0.5rem", "lg": "0.75rem", "xl": "1rem", "full": "9999px"},
+          },
+        },
+      }
     </script>
-
-</body>
-</html>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-text-primary dark:text-gray-200">
+<div class="relative flex h-auto min-h-screen w-full flex-col group/design-root overflow-x-hidden">
+<!-- Top App Bar -->
+<header class="sticky top-0 z-50 flex items-center bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-sm p-4 justify-between border-b border-gray-200 dark:border-gray-700">
+<h1 class="text-text-primary dark:text-white text-xl font-bold leading-tight tracking-[-0.015em] flex-1">Dixit IVF</h1>
+<button class="flex size-10 shrink-0 items-center justify-center rounded-full text-text-primary dark:text-white">
+<span class="material-symbols-outlined">menu</span>
+</button>
+</header>
+<!-- Hero Section -->
+<main>
+<div class="@container">
+<div class="@[480px]:p-4">
+<div class="flex min-h-[480px] flex-col gap-6 bg-cover bg-center bg-no-repeat @[480px]:gap-8 items-center justify-center p-6 text-center" data-alt="Warm, inviting image of a happy family with a newborn baby, conveying hope and joy." style='background-image: linear-gradient(rgba(47, 79, 79, 0.4) 0%, rgba(47, 79, 79, 0.7) 100%), url("https://lh3.googleusercontent.com/aida-public/AB6AXuBTMq4cYV_Adw_UHLs-sTY-Lckcmq3SybliMz-VwMha0PR8kIKTJnBLuoJovboKSb7L3oQcUHH9C3E-ZPCAfohmP6cYLH3efmINkoY1aLZ5P9Yvl89AUi5QNf4Bt4bj-f8oCxA0YY8a1Qnt8QYq-nDHKNm6ttFbiJZ0HwQa2P9OwU44DBILtoKPh-2AXZT_yXHfacpz6ViG3YJ0KYBNz5anbnw4QyCAtHJ1Z-J8gd4OnvSzSFn8vCknFnq0Xb1zSwb4mzuaiBCoOAA");'>
+<div class="flex flex-col gap-2">
+<h1 class="text-white text-4xl font-black leading-tight tracking-[-0.033em] @[480px]:text-5xl">Prayagraj's Most Trusted IVF Center</h1>
+<h2 class="text-white text-base font-normal leading-normal @[480px]:text-lg">Your Partner on the Journey to Parenthood</h2>
+</div>
+<button class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-12 px-6 @[480px]:h-14 @[480px]:px-8 bg-primary text-text-primary text-base font-bold leading-normal tracking-[0.015em] hover:bg-opacity-90 transition-colors">
+<span class="truncate">Book a Free Consultation</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Stats -->
+<div class="flex flex-wrap gap-4 p-4 -mt-16 relative z-10">
+<div class="flex min-w-[158px] flex-1 flex-col gap-2 rounded-lg p-6 bg-background-light dark:bg-gray-800 shadow-md">
+<p class="text-text-primary dark:text-gray-200 text-base font-medium leading-normal">Years of Experience</p>
+<p class="text-text-primary dark:text-white tracking-light text-2xl font-bold leading-tight">10+</p>
+</div>
+<div class="flex min-w-[158px] flex-1 flex-col gap-2 rounded-lg p-6 bg-background-light dark:bg-gray-800 shadow-md">
+<p class="text-text-primary dark:text-gray-200 text-base font-medium leading-normal">Happy Families</p>
+<p class="text-text-primary dark:text-white tracking-light text-2xl font-bold leading-tight">5000+</p>
+</div>
+</div>
+<!-- Why Choose Us? Section -->
+<section class="py-10 px-4">
+<h2 class="text-text-primary dark:text-white text-3xl font-bold leading-tight tracking-[-0.015em] text-center mb-8">Why Choose Us?</h2>
+<div class="grid grid-cols-[repeat(auto-fit,minmax(280px,1fr))] gap-4">
+<div class="flex flex-1 gap-4 rounded-lg border border-gray-200 dark:border-gray-700 bg-background-light dark:bg-background-dark p-4 flex-col items-center text-center">
+<div class="text-primary bg-primary/20 p-3 rounded-full"><span class="material-symbols-outlined text-3xl">medical_services</span></div>
+<div class="flex flex-col gap-1">
+<h3 class="text-text-primary dark:text-white text-lg font-bold leading-tight">Expert Doctors</h3>
+<p class="text-text-secondary dark:text-gray-400 text-sm font-normal leading-normal">Our team of specialists is dedicated to your success.</p>
+</div>
+</div>
+<div class="flex flex-1 gap-4 rounded-lg border border-gray-200 dark:border-gray-700 bg-background-light dark:bg-background-dark p-4 flex-col items-center text-center">
+<div class="text-primary bg-primary/20 p-3 rounded-full"><span class="material-symbols-outlined text-3xl">biotech</span></div>
+<div class="flex flex-col gap-1">
+<h3 class="text-text-primary dark:text-white text-lg font-bold leading-tight">Advanced Technology</h3>
+<p class="text-text-secondary dark:text-gray-400 text-sm font-normal leading-normal">We use state-of-the-art facilities and equipment.</p>
+</div>
+</div>
+<div class="flex flex-1 gap-4 rounded-lg border border-gray-200 dark:border-gray-700 bg-background-light dark:bg-background-dark p-4 flex-col items-center text-center">
+<div class="text-primary bg-primary/20 p-3 rounded-full"><span class="material-symbols-outlined text-3xl">trending_up</span></div>
+<div class="flex flex-col gap-1">
+<h3 class="text-text-primary dark:text-white text-lg font-bold leading-tight">High Success Rates</h3>
+<p class="text-text-secondary dark:text-gray-400 text-sm font-normal leading-normal">A proven track record of helping families grow.</p>
+</div>
+</div>
+<div class="flex flex-1 gap-4 rounded-lg border border-gray-200 dark:border-gray-700 bg-background-light dark:bg-background-dark p-4 flex-col items-center text-center">
+<div class="text-primary bg-primary/20 p-3 rounded-full"><span class="material-symbols-outlined text-3xl">favorite</span></div>
+<div class="flex flex-col gap-1">
+<h3 class="text-text-primary dark:text-white text-lg font-bold leading-tight">Personalized Care</h3>
+<p class="text-text-secondary dark:text-gray-400 text-sm font-normal leading-normal">Individualized treatment plans tailored to your needs.</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Expert Doctors Section -->
+<section class="py-10 px-4 bg-accent dark:bg-gray-800">
+<h2 class="text-text-primary dark:text-white text-3xl font-bold leading-tight tracking-[-0.015em] text-center mb-8">Our Expert Doctors</h2>
+<div class="flex flex-col md:flex-row gap-8 justify-center items-center">
+<div class="flex flex-col items-center text-center bg-background-light dark:bg-background-dark p-6 rounded-lg shadow-lg max-w-sm">
+<img class="w-32 h-32 rounded-full object-cover mb-4 border-4 border-primary" data-alt="Professional headshot of Dr. Sabita Dixit" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCHFJoTlGlNa4LvXWIiL9xVrMXqLXKWe0sAnQ8BzwXZDJY3-5cVB5D_IjhRNuwMoSLCyDj07P7PeDz0dRfzz7JBomXquRl4XXbgqfSfln64BuKqjoXujYo6EoqSAJxeEiEzWfnUXeHOWmZtjMp5aXhdcO50Op9fk6y_Dy55oIaRD1C9IV-lLbdQHFwqcXkjwlcqpQivAg7al1b8fCcGRUmfqmuOKKz2kxYbJQFdcOG66xXB1slXIv4XzC606IbYK82DZZ-XsqP-hvA"/>
+<h3 class="text-text-primary dark:text-white text-xl font-bold">Dr. Sabita Dixit</h3>
+<p class="text-primary font-semibold">MBBS, MS (Obs &amp; Gynae)</p>
+<p class="text-text-secondary dark:text-gray-400 mt-2 text-sm">With over 15 years of experience, Dr. Dixit is a leading expert in infertility treatments and women's health.</p>
+</div>
+<div class="flex flex-col items-center text-center bg-background-light dark:bg-background-dark p-6 rounded-lg shadow-lg max-w-sm">
+<img class="w-32 h-32 rounded-full object-cover mb-4 border-4 border-primary" data-alt="Professional headshot of Dr. Piyush Dixit" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBDUxeLzKMb9rPU6aK2RpDbs_HL3s8WJK1_4Cn7CXInK4wOFWgOzPCYI00EswDjs_totcJbDA2FH_9277ckr1U2NwH0h3dHl50gaBDuTYSN8Zzywnyc9hQgWwyHUlHx3_Q7cRQxAJBG13rcVdrmnT9mAsC3Ot2ohoFF1UoQNLA7XkIgr8GyTYabrSJGNXYM_m7qTlNENPKH7zmTd10d59V_pKm0fHNJdodGDf5fPdRu4a7RSgTPw22zhdlQYb7jpmgoKugVx1Pxyok"/>
+<h3 class="text-text-primary dark:text-white text-xl font-bold">Dr. Piyush Dixit</h3>
+<p class="text-primary font-semibold">MBBS, DNB</p>
+<p class="text-text-secondary dark:text-gray-400 mt-2 text-sm">Dr. Piyush specializes in advanced IVF techniques and andrology, committed to providing compassionate care.</p>
+</div>
+</div>
+</section>
+<!-- Treatments Section -->
+<section class="py-10 px-4">
+<h2 class="text-text-primary dark:text-white text-3xl font-bold leading-tight tracking-[-0.015em] text-center mb-8">Treatments and Services</h2>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<div class="p-6 border border-gray-200 dark:border-gray-700 rounded-lg text-center">
+<h3 class="text-xl font-bold text-text-primary dark:text-white mb-2">IVF (In Vitro Fertilization)</h3>
+<p class="text-text-secondary dark:text-gray-400">A comprehensive process to help you conceive, managed by our expert embryologists.</p>
+</div>
+<div class="p-6 border border-gray-200 dark:border-gray-700 rounded-lg text-center">
+<h3 class="text-xl font-bold text-text-primary dark:text-white mb-2">ICSI (Intracytoplasmic Sperm Injection)</h3>
+<p class="text-text-secondary dark:text-gray-400">An advanced technique for male infertility, ensuring the best chances of fertilization.</p>
+</div>
+<div class="p-6 border border-gray-200 dark:border-gray-700 rounded-lg text-center">
+<h3 class="text-xl font-bold text-text-primary dark:text-white mb-2">IUI (Intrauterine Insemination)</h3>
+<p class="text-text-secondary dark:text-gray-400">A less invasive procedure to increase the chances of pregnancy with minimal intervention.</p>
+</div>
+</div>
+</section>
+<!-- Testimonials Section -->
+<section class="py-10 px-4 bg-accent dark:bg-gray-800">
+<h2 class="text-text-primary dark:text-white text-3xl font-bold leading-tight tracking-[-0.015em] text-center mb-8">Stories of Hope</h2>
+<div class="max-w-2xl mx-auto">
+<div class="bg-background-light dark:bg-background-dark p-6 rounded-lg shadow-lg text-center">
+<p class="text-text-secondary dark:text-gray-300 italic">"The team at Dixit IVF gave us hope when we thought all was lost. Their care, expertise, and support were incredible. Today, we are proud parents of a beautiful baby girl. We can't thank them enough!"</p>
+<p class="text-text-primary dark:text-white font-bold mt-4">- Anjali &amp; Rohan S.</p>
+</div>
+</div>
+</section>
+<!-- FAQ Section -->
+<section class="py-10 px-4">
+<h2 class="text-text-primary dark:text-white text-3xl font-bold leading-tight tracking-[-0.015em] text-center mb-8">Frequently Asked Questions</h2>
+<div class="max-w-2xl mx-auto space-y-4">
+<details class="group p-4 rounded-lg border border-gray-200 dark:border-gray-700">
+<summary class="flex justify-between items-center font-semibold cursor-pointer text-text-primary dark:text-white">
+                            What is the success rate of IVF at your clinic?
+                            <span class="material-symbols-outlined transition-transform duration-300 group-open:rotate-180">expand_more</span>
+</summary>
+<p class="text-text-secondary dark:text-gray-400 mt-2">Our success rates are among the highest in the region, thanks to our advanced technology and experienced team. We provide personalized success projections during your consultation.</p>
+</details>
+<details class="group p-4 rounded-lg border border-gray-200 dark:border-gray-700">
+<summary class="flex justify-between items-center font-semibold cursor-pointer text-text-primary dark:text-white">
+                            How much does IVF treatment cost?
+                            <span class="material-symbols-outlined transition-transform duration-300 group-open:rotate-180">expand_more</span>
+</summary>
+<p class="text-text-secondary dark:text-gray-400 mt-2">The cost varies based on the individual treatment plan. We offer transparent pricing and financial counseling to help you understand all the options available.</p>
+</details>
+<details class="group p-4 rounded-lg border border-gray-200 dark:border-gray-700">
+<summary class="flex justify-between items-center font-semibold cursor-pointer text-text-primary dark:text-white">
+                            Is the IVF process painful?
+                            <span class="material-symbols-outlined transition-transform duration-300 group-open:rotate-180">expand_more</span>
+</summary>
+<p class="text-text-secondary dark:text-gray-400 mt-2">Most patients report minimal discomfort. Procedures like egg retrieval are performed under light sedation to ensure you are comfortable. Our team is dedicated to making your experience as pain-free as possible.</p>
+</details>
+</div>
+</section>
+<!-- Contact Section -->
+<section class="py-10 px-4 bg-accent dark:bg-gray-800" id="contact">
+<h2 class="text-text-primary dark:text-white text-3xl font-bold leading-tight tracking-[-0.015em] text-center mb-8">Book Your Free Consultation</h2>
+<div class="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8">
+<div class="bg-background-light dark:bg-background-dark p-6 rounded-lg shadow-lg">
+<form class="space-y-4">
+<div>
+<label class="block text-sm font-medium text-text-secondary dark:text-gray-300" for="name">Full Name</label>
+<input class="mt-1 block w-full rounded border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-50" id="name" type="text"/>
+</div>
+<div>
+<label class="block text-sm font-medium text-text-secondary dark:text-gray-300" for="phone">Phone Number</label>
+<input class="mt-1 block w-full rounded border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-50" id="phone" type="tel"/>
+</div>
+<div>
+<label class="block text-sm font-medium text-text-secondary dark:text-gray-300" for="message">Message (Optional)</label>
+<textarea class="mt-1 block w-full rounded border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-50" id="message" rows="3"></textarea>
+</div>
+<button class="w-full flex justify-center py-3 px-4 border border-transparent rounded-full shadow-sm text-base font-bold text-text-primary bg-primary hover:bg-opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary" type="submit">
+                                Schedule My Appointment
+                            </button>
+</form>
+</div>
+<div class="space-y-6">
+<div>
+<iframe allowfullscreen="" class="w-full h-48 rounded-lg" data-location="Prayagraj" height="450" loading="lazy" src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3602.818621450013!2d81.8463973150146!3d25.44421198378174!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x399acaa5b5f2b8f3%3A0x8f72a5f7f3f2b8b3!2sPrayagraj%2C%20Uttar%20Pradesh%2C%20India!5e0!3m2!1sen!2sus!4v1620000000000!5m2!1sen!2sus" style="border:0;" width="600"></iframe>
+</div>
+<div class="space-y-3">
+<p class="flex items-center"><span class="material-symbols-outlined mr-2 text-primary">location_on</span>123 Fertility Avenue, Civil Lines, Prayagraj, UP</p>
+<a class="flex items-center hover:text-primary" href="tel:+911234567890"><span class="material-symbols-outlined mr-2 text-primary">call</span>+91 123 456 7890</a>
+<a class="flex items-center hover:text-primary" href="mailto:contact@dixitivf.com"><span class="material-symbols-outlined mr-2 text-primary">email</span>contact@dixitivf.com</a>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Footer -->
+<footer class="p-4 text-center text-sm text-text-secondary dark:text-gray-400 border-t border-gray-200 dark:border-gray-700">
+<p>© 2024 Dixit IVF Clinic. All Rights Reserved.</p>
+</footer>
+</div>
+</body></html>

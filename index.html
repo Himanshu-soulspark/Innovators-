@@ -126,8 +126,8 @@
             </div>
 
             <!-- Stats Card (Live) -->
-            <div class="glass-panel rounded-2xl p-5 flex flex-col gap-4">
-                <div class="flex justify-between items-end">
+            <div class="glass-panel rounded-2xl p-5 flex flex-col gap-4 relative overflow-hidden">
+                <div class="flex justify-between items-end relative z-10">
                     <div>
                         <p class="text-cyan-600 text-xs font-bold uppercase tracking-widest mb-1">Session Blinks</p>
                         <div class="flex items-baseline gap-1">
@@ -142,15 +142,15 @@
                 </div>
 
                 <!-- Timer & Status -->
-                <div class="flex items-center justify-between bg-white/50 rounded-xl p-3 border border-cyan-100">
-                    <div class="flex flex-col">
-                        <span class="text-[10px] text-slate-400 uppercase font-bold">Duration</span>
-                        <span id="timer-display" class="text-lg font-mono font-medium text-slate-700">00:00</span>
+                <div class="flex flex-col gap-2 relative z-10">
+                    <div class="flex items-center justify-between">
+                        <span class="text-[10px] text-slate-400 uppercase font-bold">Time Left</span>
+                        <span id="timer-display" class="text-lg font-mono font-bold text-cyan-700">01:00</span>
                     </div>
-                    <div class="h-8 w-[1px] bg-slate-200"></div>
-                    <div class="flex flex-col items-end">
-                         <span class="text-[10px] text-slate-400 uppercase font-bold">Status</span>
-                         <span id="status-indicator" class="text-sm font-semibold text-slate-400">Standby</span>
+                    
+                    <!-- Progress Bar Container -->
+                    <div class="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
+                        <div id="progress-bar" class="h-full bg-cyan-500 w-0 transition-all duration-1000 ease-linear rounded-full"></div>
                     </div>
                 </div>
             </div>
@@ -166,8 +166,8 @@
                     </div>
                 </div>
                 
-                <h2 class="text-2xl font-bold text-center text-slate-800 mb-1">Session Report</h2>
-                <p class="text-center text-slate-500 text-sm mb-6">Here is your eye health analysis</p>
+                <h2 class="text-2xl font-bold text-center text-slate-800 mb-1">Analysis Complete</h2>
+                <p class="text-center text-slate-500 text-sm mb-6">1-Minute Session Report</p>
 
                 <div class="grid grid-cols-2 gap-4 mb-6">
                     <div class="bg-slate-50 p-3 rounded-2xl text-center">
@@ -190,7 +190,7 @@
                 </div>
 
                 <button onclick="window.closeModal()" class="w-full py-3.5 bg-slate-900 text-white rounded-xl font-semibold shadow-lg active:scale-95 transition-transform">
-                    Close Report
+                    Start New Test
                 </button>
             </div>
         </div>
@@ -200,7 +200,7 @@
             <div class="flex gap-4">
                 <button onclick="window.toggleScan()" id="scan-btn" class="flex-1 h-14 bg-cyan-500 hover:bg-cyan-600 text-white rounded-xl font-bold text-lg shadow-[0_8px_20px_rgba(6,182,212,0.3)] transition-all active:scale-95 flex items-center justify-center gap-2 group">
                     <span class="material-symbols-rounded group-hover:animate-pulse" id="btn-icon">play_circle</span>
-                    <span id="btn-text">Start Tracking</span>
+                    <span id="btn-text">Start 1-Min Test</span>
                 </button>
                 
                 <button class="h-14 w-14 glass-panel bg-white rounded-xl flex items-center justify-center text-cyan-600 border-cyan-200 hover:bg-cyan-50 transition-colors active:scale-95 shadow-sm">
@@ -223,7 +223,7 @@
         const blinkCountEl = document.getElementById("blink-count");
         const eyeIcon = document.getElementById("eye-icon");
         const timerDisplay = document.getElementById("timer-display");
-        const statusIndicator = document.getElementById("status-indicator");
+        const progressBar = document.getElementById("progress-bar");
         
         // Modal Elements
         const modal = document.getElementById("result-modal");
@@ -250,8 +250,8 @@
         let isScanning = false;
         let blinkCounter = 0;
         let isEyeClosed = false;
-        let sessionStartTime = 0;
         let timerInterval = null;
+        let remainingTime = 60; // 60 seconds fixed duration
 
         // --- 1. SETUP AI ---
         async function createFaceLandmarker() {
@@ -301,7 +301,6 @@
                 video.addEventListener("loadeddata", predictWebcam);
                 loadingDiv.classList.add("hidden");
                 webcamRunning = true;
-                statusIndicator.innerText = "Ready to Start";
             })
             .catch((err) => {
                 if(err.name === 'NotAllowedError') showError("Permission Denied. Allow Camera.");
@@ -313,7 +312,6 @@
         async function predictWebcam() {
             if (lastVideoTime !== video.currentTime) {
                 lastVideoTime = video.currentTime;
-                // Detect Face
                 let results = faceLandmarker.detectForVideo(video, Date.now());
 
                 if (results.faceBlendshapes && results.faceBlendshapes.length > 0) {
@@ -325,19 +323,14 @@
 
         // --- 4. BLINK DETECTION LOGIC (SENSITIVE) ---
         function detectBlink(blendshapes) {
-            // Only process logic if scanning is active for data, 
-            // BUT we still want to visualize the eye icon even if not recording data.
-            
             const eyeBlinkLeft = blendshapes.find(s => s.categoryName === 'eyeBlinkLeft');
             const eyeBlinkRight = blendshapes.find(s => s.categoryName === 'eyeBlinkRight');
 
             if (eyeBlinkLeft && eyeBlinkRight) {
-                // SENSITIVITY TWEAK: Lowered to 0.4 (from 0.5) to catch slight blinks
-                // Added hysteresis: Must go below 0.35 to reset.
-                
+                // SENSITIVITY: 0.4 threshold for sensitive detection
                 const avgScore = (eyeBlinkLeft.score + eyeBlinkRight.score) / 2;
-                const CLOSE_THRESHOLD = 0.4; // More sensitive
-                const OPEN_THRESHOLD = 0.3;  // Reset point
+                const CLOSE_THRESHOLD = 0.4; 
+                const OPEN_THRESHOLD = 0.3;
 
                 if (avgScore > CLOSE_THRESHOLD) {
                     // Visual Update
@@ -350,7 +343,7 @@
                         blinkCounter++;
                         blinkCountEl.innerText = blinkCounter;
                         
-                        // Small animation on count
+                        // Pulse Animation
                         blinkCountEl.classList.remove('scale-100');
                         blinkCountEl.classList.add('scale-110');
                         setTimeout(() => blinkCountEl.classList.remove('scale-110'), 100);
@@ -359,8 +352,6 @@
                     // Visual Update
                     eyeIcon.innerText = "visibility";
                     eyeIcon.classList.replace("text-slate-400", "text-cyan-500");
-                    
-                    // Logic Reset
                     isEyeClosed = false;
                 }
             }
@@ -374,111 +365,129 @@
             const overlay = document.getElementById('scan-overlay');
 
             if (!isScanning) {
-                // STARTING
+                // --- START SESSION ---
                 isScanning = true;
                 blinkCounter = 0;
                 blinkCountEl.innerText = "0";
-                sessionStartTime = Date.now();
+                remainingTime = 60; // Reset to 60 seconds
                 
                 // UI Changes
                 overlay.classList.remove('hidden');
-                btnText.innerText = "Stop & Result";
+                btnText.innerText = "Stop Scanning";
                 btn.classList.replace('bg-cyan-500', 'bg-red-500');
                 btn.classList.replace('hover:bg-cyan-600', 'hover:bg-red-600');
                 btn.classList.replace('shadow-[0_8px_20px_rgba(6,182,212,0.3)]', 'shadow-[0_8px_20px_rgba(239,68,68,0.3)]');
                 btnIcon.innerText = "stop_circle";
-                statusIndicator.innerText = "Tracking...";
-                statusIndicator.className = "text-sm font-bold text-red-500 animate-pulse";
+                
+                // Reset Progress Bar
+                progressBar.style.width = "0%";
+                progressBar.classList.remove("bg-red-500");
+                progressBar.classList.add("bg-cyan-500");
+                
+                // Update Initial Timer
+                timerDisplay.innerText = "01:00";
 
-                // Start Timer
-                timerInterval = setInterval(updateTimer, 1000);
+                // Start Countdown
+                timerInterval = setInterval(() => {
+                    remainingTime--;
+                    updateTimerUI();
+
+                    if (remainingTime <= 0) {
+                        // AUTO STOP
+                        window.toggleScan(); 
+                    }
+                }, 1000);
 
             } else {
-                // STOPPING
+                // --- STOP SESSION ---
                 isScanning = false;
                 clearInterval(timerInterval);
                 
                 // UI Changes
                 overlay.classList.add('hidden');
-                btnText.innerText = "Start Tracking";
+                btnText.innerText = "Start 1-Min Test";
                 btn.classList.replace('bg-red-500', 'bg-cyan-500');
                 btn.classList.replace('hover:bg-red-600', 'hover:bg-cyan-600');
                 btn.classList.replace('shadow-[0_8px_20px_rgba(239,68,68,0.3)]', 'shadow-[0_8px_20px_rgba(6,182,212,0.3)]');
                 btnIcon.innerText = "play_circle";
-                statusIndicator.innerText = "Session Ended";
-                statusIndicator.className = "text-sm font-semibold text-slate-400";
 
                 // Show Results
                 showResultModal();
             }
         };
 
-        function updateTimer() {
-            const now = Date.now();
-            const diff = Math.floor((now - sessionStartTime) / 1000);
-            const mins = Math.floor(diff / 60).toString().padStart(2, '0');
-            const secs = (diff % 60).toString().padStart(2, '0');
+        function updateTimerUI() {
+            const mins = Math.floor(remainingTime / 60).toString().padStart(2, '0');
+            const secs = (remainingTime % 60).toString().padStart(2, '0');
             timerDisplay.innerText = `${mins}:${secs}`;
+            
+            // Progress Bar Logic (Fills up as time reduces)
+            const percentage = ((60 - remainingTime) / 60) * 100;
+            progressBar.style.width = `${percentage}%`;
+            
+            // Change color if time is low (last 10 secs)
+            if(remainingTime < 10) {
+                progressBar.classList.remove("bg-cyan-500");
+                progressBar.classList.add("bg-red-500");
+                timerDisplay.classList.add("text-red-500");
+            } else {
+                timerDisplay.classList.remove("text-red-500");
+            }
         }
 
         // --- 6. RESULT CALCULATION ---
         function showResultModal() {
-            const durationSec = Math.floor((Date.now() - sessionStartTime) / 1000);
-            const durationMin = durationSec / 60;
+            // Logic based on actual duration passed (in case user stopped early)
+            const durationUsed = 60 - remainingTime; 
+            const durationMin = durationUsed / 60;
             
-            // Calculate BPM (Blinks Per Minute)
-            // If less than 1 min, extrapolate, but cap if duration is very short
             let rate = 0;
-            if (durationMin < 0.1) {
-                // Too short to judge accurately
-                rate = blinkCounter; 
+            // If less than 5 seconds, data is too small
+            if (durationUsed < 5) {
+                rate = blinkCounter; // Raw count
             } else {
-                rate = Math.round(blinkCounter / durationMin);
+                // Extrapolate to per minute if stopped early, or just take count if 1 min passed
+                rate = Math.round(blinkCounter / (durationMin || 1));
             }
 
-            // Update Modal Content
             modalTotal.innerText = blinkCounter;
             modalRate.innerText = rate;
             
-            // Logic for Verdict
-            // Normal blink rate is ~15-20. 
-            // < 10 indicates staring/strain.
-            // > 30 indicates anxiety or fatigue.
-            
-            // Reset Classes
+            // Verdict Logic
             modalVerdictBox.className = "rounded-xl p-4 mb-6 flex items-center gap-3 border-l-4";
 
-            if (durationSec < 5) {
-                modalVerdict.innerText = "Too Short";
+            if (durationUsed < 10) {
+                modalVerdict.innerText = "Insufficient Data";
                 modalVerdictBox.classList.add("bg-slate-100", "border-slate-400", "text-slate-700");
                 modalIcon.innerText = "timer_off";
-                modalIcon.className = "material-symbols-rounded text-3xl text-slate-500";
-            } else if (rate >= 10 && rate <= 25) {
-                modalVerdict.innerText = "Healthy Range";
+            } else if (rate >= 12 && rate <= 28) {
+                modalVerdict.innerText = "Healthy Blink Rate";
                 modalVerdictBox.classList.add("bg-green-50", "border-green-500", "text-green-800");
                 modalIcon.innerText = "check_circle";
                 modalIcon.className = "material-symbols-rounded text-3xl text-green-600";
-            } else if (rate < 10) {
-                modalVerdict.innerText = "High Strain (Low Blink)";
+            } else if (rate < 12) {
+                modalVerdict.innerText = "High Eye Strain";
                 modalVerdictBox.classList.add("bg-red-50", "border-red-500", "text-red-800");
                 modalIcon.innerText = "warning";
                 modalIcon.className = "material-symbols-rounded text-3xl text-red-600";
             } else {
-                modalVerdict.innerText = "Fatigue / Dry Eyes";
+                modalVerdict.innerText = "Fatigue / Anxiety";
                 modalVerdictBox.classList.add("bg-yellow-50", "border-yellow-500", "text-yellow-800");
                 modalIcon.innerText = "opacity";
                 modalIcon.className = "material-symbols-rounded text-3xl text-yellow-600";
             }
 
-            // Show Modal
             modal.classList.remove("hidden");
         }
 
         window.closeModal = function() {
             modal.classList.add("hidden");
-            // Reset Timer Text
-            timerDisplay.innerText = "00:00";
-            statusIndicator.innerText = "Standby";
+            // Reset UI
+            timerDisplay.innerText = "01:00";
+            timerDisplay.classList.remove("text-red-500");
+            progressBar.style.width = "0%";
+            progressBar.classList.remove("bg-red-500");
+            progressBar.classList.add("bg-cyan-500");
         }
 
         function showError(msg) {

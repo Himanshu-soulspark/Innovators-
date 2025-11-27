@@ -169,26 +169,26 @@
                         <span class="material-symbols-rounded text-2xl">info</span>
                     </div>
                 </div>
-                <h2 class="text-xl font-bold text-center text-slate-800 mb-2">Before We Start</h2>
-                <p class="text-center text-slate-500 text-sm mb-6">Follow these steps for accurate results:</p>
+                <h2 class="text-xl font-bold text-center text-slate-800 mb-2">Instructions</h2>
+                <p class="text-center text-slate-500 text-sm mb-6">For accurate blink detection:</p>
                 
                 <ul class="space-y-4 mb-6">
                     <li class="flex gap-3 items-start">
                         <span class="material-symbols-rounded text-cyan-500 shrink-0">smartphone</span>
-                        <p class="text-sm text-slate-600"><strong>Eye Level:</strong> Hold your phone directly in front of your face, not below.</p>
+                        <p class="text-sm text-slate-600"><strong>Eye Level:</strong> Keep phone directly in front of face.</p>
                     </li>
                     <li class="flex gap-3 items-start">
                         <span class="material-symbols-rounded text-cyan-500 shrink-0">light_mode</span>
-                        <p class="text-sm text-slate-600"><strong>Lighting:</strong> Ensure your face is well-lit. Avoid backlight.</p>
+                        <p class="text-sm text-slate-600"><strong>Lighting:</strong> Ensure face is well lit (no shadows).</p>
                     </li>
                     <li class="flex gap-3 items-start">
                         <span class="material-symbols-rounded text-cyan-500 shrink-0">visibility</span>
-                        <p class="text-sm text-slate-600"><strong>Blink Naturally:</strong> Do not force blinks. Relax your eyes.</p>
+                        <p class="text-sm text-slate-600"><strong>Steady:</strong> Hold phone steady. Blink naturally.</p>
                     </li>
                 </ul>
 
                 <button onclick="window.startActualTest()" class="w-full py-3.5 bg-cyan-600 hover:bg-cyan-700 text-white rounded-xl font-bold shadow-lg transition-all active:scale-95">
-                    I'm Ready, Start (1 Min)
+                    Start 1-Min Test
                 </button>
             </div>
         </div>
@@ -328,7 +328,7 @@
             }
         }
 
-        // --- 2. CAMERA HANDLING ---
+        // --- 2. CAMERA HANDLING (OPTIMIZED FOR SPEED) ---
         function startCamera() {
             if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
                 showError("Browser not supported. Use Chrome (HTTPS).");
@@ -338,7 +338,10 @@
             const constraints = {
                 video: {
                     facingMode: "user",
-                    width: { ideal: 640 },
+                    // Optimization 1: Request 60FPS for fast blink detection
+                    frameRate: { ideal: 60, max: 60 },
+                    // Optimization 2: Slightly lower resolution to ensure processor keeps up
+                    width: { ideal: 640 }, 
                     height: { ideal: 480 }
                 }
             };
@@ -360,6 +363,7 @@
         async function predictWebcam() {
             if (lastVideoTime !== video.currentTime) {
                 lastVideoTime = video.currentTime;
+                // Detect Face
                 let results = faceLandmarker.detectForVideo(video, Date.now());
 
                 if (results.faceBlendshapes && results.faceBlendshapes.length > 0) {
@@ -369,20 +373,21 @@
             if (webcamRunning) window.requestAnimationFrame(predictWebcam);
         }
 
-        // --- 4. BLINK DETECTION (Sensitive Logic) ---
+        // --- 4. BLINK DETECTION (AGGRESSIVE LOGIC) ---
         function detectBlink(blendshapes) {
             const eyeBlinkLeft = blendshapes.find(s => s.categoryName === 'eyeBlinkLeft');
             const eyeBlinkRight = blendshapes.find(s => s.categoryName === 'eyeBlinkRight');
 
             if (eyeBlinkLeft && eyeBlinkRight) {
-                // Sensitive Threshold: 0.4
-                // Note: User instructions to hold phone at eye level helps accuracy
+                // Optimization 3: Aggressive Thresholds
+                // Previous was 0.4. Now 0.35 allows partial/fast blinks to register.
                 const avgScore = (eyeBlinkLeft.score + eyeBlinkRight.score) / 2;
-                const CLOSE_THRESHOLD = 0.4; 
-                const OPEN_THRESHOLD = 0.3;
+                
+                const CLOSE_THRESHOLD = 0.35; // Lower = More Sensitive to fast blinks
+                const OPEN_THRESHOLD = 0.25;  // Lower = Resets faster for next blink
 
                 if (avgScore > CLOSE_THRESHOLD) {
-                    // Visual
+                    // Visual Update
                     eyeIcon.innerText = "visibility_off";
                     eyeIcon.classList.replace("text-cyan-500", "text-slate-400");
                     
@@ -398,6 +403,7 @@
                         setTimeout(() => blinkCountEl.classList.remove('scale-110'), 100);
                     }
                 } else if (avgScore < OPEN_THRESHOLD) {
+                    // Eye Open
                     eyeIcon.innerText = "visibility";
                     eyeIcon.classList.replace("text-slate-400", "text-cyan-500");
                     isEyeClosed = false;
@@ -410,10 +416,8 @@
         // Step 1: Click "Start Test" -> Show Instructions
         window.initiateScan = function() {
             if(isScanning) {
-                // If already running, stop it
                 window.stopScan();
             } else {
-                // If idle, show instructions first
                 if(!webcamRunning) {
                     alert("Please wait for camera to load.");
                     return;

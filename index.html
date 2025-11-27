@@ -32,8 +32,8 @@
             },
             animation: {
               'scan': 'scan 2s linear infinite',
-              'pulse-slow': 'pulse 3s infinite',
               'pop-in': 'popIn 0.3s ease-out forwards',
+              'fade-in': 'fadeIn 0.3s ease-out forwards',
             },
             keyframes: {
               scan: {
@@ -45,6 +45,10 @@
               popIn: {
                 '0%': { transform: 'scale(0.9)', opacity: '0' },
                 '100%': { transform: 'scale(1)', opacity: '1' }
+              },
+              fadeIn: {
+                '0%': { opacity: '0' },
+                '100%': { opacity: '1' }
               }
             }
           },
@@ -144,7 +148,7 @@
                 <!-- Timer & Status -->
                 <div class="flex flex-col gap-2 relative z-10">
                     <div class="flex items-center justify-between">
-                        <span class="text-[10px] text-slate-400 uppercase font-bold">Time Left</span>
+                        <span class="text-[10px] text-slate-400 uppercase font-bold">Time Remaining</span>
                         <span id="timer-display" class="text-lg font-mono font-bold text-cyan-700">01:00</span>
                     </div>
                     
@@ -157,8 +161,40 @@
 
         </main>
 
-        <!-- RESULT POPUP MODAL (Hidden by default) -->
-        <div id="result-modal" class="absolute inset-0 z-50 bg-black/40 backdrop-blur-sm hidden flex items-center justify-center p-6">
+        <!-- INSTRUCTION MODAL (First Step) -->
+        <div id="instruction-modal" class="absolute inset-0 z-50 bg-slate-900/60 backdrop-blur-sm hidden flex items-center justify-center p-6 animate-fade-in">
+            <div class="bg-white rounded-3xl w-full max-w-sm p-6 shadow-2xl border border-white/50">
+                <div class="flex justify-center mb-4">
+                    <div class="w-12 h-12 rounded-full bg-cyan-100 text-cyan-600 flex items-center justify-center">
+                        <span class="material-symbols-rounded text-2xl">info</span>
+                    </div>
+                </div>
+                <h2 class="text-xl font-bold text-center text-slate-800 mb-2">Before We Start</h2>
+                <p class="text-center text-slate-500 text-sm mb-6">Follow these steps for accurate results:</p>
+                
+                <ul class="space-y-4 mb-6">
+                    <li class="flex gap-3 items-start">
+                        <span class="material-symbols-rounded text-cyan-500 shrink-0">smartphone</span>
+                        <p class="text-sm text-slate-600"><strong>Eye Level:</strong> Hold your phone directly in front of your face, not below.</p>
+                    </li>
+                    <li class="flex gap-3 items-start">
+                        <span class="material-symbols-rounded text-cyan-500 shrink-0">light_mode</span>
+                        <p class="text-sm text-slate-600"><strong>Lighting:</strong> Ensure your face is well-lit. Avoid backlight.</p>
+                    </li>
+                    <li class="flex gap-3 items-start">
+                        <span class="material-symbols-rounded text-cyan-500 shrink-0">visibility</span>
+                        <p class="text-sm text-slate-600"><strong>Blink Naturally:</strong> Do not force blinks. Relax your eyes.</p>
+                    </li>
+                </ul>
+
+                <button onclick="window.startActualTest()" class="w-full py-3.5 bg-cyan-600 hover:bg-cyan-700 text-white rounded-xl font-bold shadow-lg transition-all active:scale-95">
+                    I'm Ready, Start (1 Min)
+                </button>
+            </div>
+        </div>
+
+        <!-- RESULT POPUP MODAL (End Step) -->
+        <div id="result-modal" class="absolute inset-0 z-50 bg-black/50 backdrop-blur-sm hidden flex items-center justify-center p-6">
             <div class="bg-white rounded-3xl w-full max-w-sm p-6 shadow-2xl animate-pop-in border border-white/50">
                 <div class="flex justify-center mb-4">
                     <div class="w-16 h-16 rounded-full bg-cyan-50 flex items-center justify-center border-4 border-white shadow-lg">
@@ -170,27 +206,36 @@
                 <p class="text-center text-slate-500 text-sm mb-6">1-Minute Session Report</p>
 
                 <div class="grid grid-cols-2 gap-4 mb-6">
-                    <div class="bg-slate-50 p-3 rounded-2xl text-center">
-                        <p class="text-xs text-slate-400 uppercase font-bold">Blinks / Min</p>
+                    <div class="bg-slate-50 p-3 rounded-2xl text-center border border-slate-100">
+                        <p class="text-xs text-slate-400 uppercase font-bold">Blink Rate</p>
                         <p id="modal-rate" class="text-2xl font-bold text-cyan-700">--</p>
+                        <p class="text-[10px] text-slate-400">per minute</p>
                     </div>
-                    <div class="bg-slate-50 p-3 rounded-2xl text-center">
+                    <div class="bg-slate-50 p-3 rounded-2xl text-center border border-slate-100">
                         <p class="text-xs text-slate-400 uppercase font-bold">Total Blinks</p>
                         <p id="modal-total" class="text-2xl font-bold text-slate-700">--</p>
+                        <p class="text-[10px] text-slate-400">count</p>
                     </div>
                 </div>
 
                 <!-- Strain Result Box -->
-                <div id="modal-verdict-box" class="rounded-xl p-4 mb-6 flex items-center gap-3 border-l-4">
-                    <span id="modal-icon" class="material-symbols-rounded text-3xl">check_circle</span>
-                    <div>
-                        <p class="text-xs opacity-80 font-bold uppercase">Strain Level</p>
-                        <p id="modal-verdict" class="text-lg font-bold">Calculating...</p>
+                <div class="mb-2">
+                    <p class="text-xs text-slate-400 font-bold uppercase mb-2 ml-1">Result Verdict</p>
+                    <div id="modal-verdict-box" class="rounded-xl p-4 flex items-center gap-3 border-l-4 shadow-sm bg-slate-50">
+                        <span id="modal-icon" class="material-symbols-rounded text-3xl">check_circle</span>
+                        <div>
+                            <p class="text-xs opacity-70 font-bold uppercase">Strain Level</p>
+                            <p id="modal-verdict" class="text-lg font-bold">Calculating...</p>
+                        </div>
                     </div>
                 </div>
+                
+                <p class="text-xs text-slate-400 text-center mb-4 mt-2 px-2" id="modal-tip">
+                    Tip: Follow the 20-20-20 rule to reduce strain.
+                </p>
 
                 <button onclick="window.closeModal()" class="w-full py-3.5 bg-slate-900 text-white rounded-xl font-semibold shadow-lg active:scale-95 transition-transform">
-                    Start New Test
+                    Done / Restart
                 </button>
             </div>
         </div>
@@ -198,7 +243,7 @@
         <!-- Bottom Action Bar (Fixed) -->
         <div class="absolute bottom-0 left-0 w-full p-6 bg-gradient-to-t from-white via-white/95 to-transparent z-30">
             <div class="flex gap-4">
-                <button onclick="window.toggleScan()" id="scan-btn" class="flex-1 h-14 bg-cyan-500 hover:bg-cyan-600 text-white rounded-xl font-bold text-lg shadow-[0_8px_20px_rgba(6,182,212,0.3)] transition-all active:scale-95 flex items-center justify-center gap-2 group">
+                <button onclick="window.initiateScan()" id="scan-btn" class="flex-1 h-14 bg-cyan-500 hover:bg-cyan-600 text-white rounded-xl font-bold text-lg shadow-[0_8px_20px_rgba(6,182,212,0.3)] transition-all active:scale-95 flex items-center justify-center gap-2 group">
                     <span class="material-symbols-rounded group-hover:animate-pulse" id="btn-icon">play_circle</span>
                     <span id="btn-text">Start 1-Min Test</span>
                 </button>
@@ -225,17 +270,20 @@
         const timerDisplay = document.getElementById("timer-display");
         const progressBar = document.getElementById("progress-bar");
         
-        // Modal Elements
-        const modal = document.getElementById("result-modal");
+        // Modals
+        const instructionModal = document.getElementById("instruction-modal");
+        const resultModal = document.getElementById("result-modal");
+        
+        // Result Content
         const modalRate = document.getElementById("modal-rate");
         const modalTotal = document.getElementById("modal-total");
         const modalVerdict = document.getElementById("modal-verdict");
         const modalVerdictBox = document.getElementById("modal-verdict-box");
         const modalIcon = document.getElementById("modal-icon");
+        const modalTip = document.getElementById("modal-tip");
 
         // UI Loading Elements
         const loadingDiv = document.getElementById("camera-loading");
-        const spinner = document.getElementById("spinner");
         const loadingText = document.getElementById("loading-text");
         const errorBox = document.getElementById("error-box");
         const errorMsg = document.getElementById("error-msg");
@@ -251,7 +299,7 @@
         let blinkCounter = 0;
         let isEyeClosed = false;
         let timerInterval = null;
-        let remainingTime = 60; // 60 seconds fixed duration
+        let remainingTime = 60; 
 
         // --- 1. SETUP AI ---
         async function createFaceLandmarker() {
@@ -275,7 +323,7 @@
                 startCamera();
 
             } catch (error) {
-                showError("Error loading AI. Refresh page.");
+                showError("Error loading AI. Please refresh.");
                 console.error(error);
             }
         }
@@ -303,7 +351,7 @@
                 webcamRunning = true;
             })
             .catch((err) => {
-                if(err.name === 'NotAllowedError') showError("Permission Denied. Allow Camera.");
+                if(err.name === 'NotAllowedError') showError("Camera Permission Denied.");
                 else showError("Camera Error. Use HTTPS.");
             });
         }
@@ -321,35 +369,35 @@
             if (webcamRunning) window.requestAnimationFrame(predictWebcam);
         }
 
-        // --- 4. BLINK DETECTION LOGIC (SENSITIVE) ---
+        // --- 4. BLINK DETECTION (Sensitive Logic) ---
         function detectBlink(blendshapes) {
             const eyeBlinkLeft = blendshapes.find(s => s.categoryName === 'eyeBlinkLeft');
             const eyeBlinkRight = blendshapes.find(s => s.categoryName === 'eyeBlinkRight');
 
             if (eyeBlinkLeft && eyeBlinkRight) {
-                // SENSITIVITY: 0.4 threshold for sensitive detection
+                // Sensitive Threshold: 0.4
+                // Note: User instructions to hold phone at eye level helps accuracy
                 const avgScore = (eyeBlinkLeft.score + eyeBlinkRight.score) / 2;
                 const CLOSE_THRESHOLD = 0.4; 
                 const OPEN_THRESHOLD = 0.3;
 
                 if (avgScore > CLOSE_THRESHOLD) {
-                    // Visual Update
+                    // Visual
                     eyeIcon.innerText = "visibility_off";
                     eyeIcon.classList.replace("text-cyan-500", "text-slate-400");
                     
-                    // Logic Update (Only if scanning)
+                    // Logic (Only count if scanning)
                     if (isScanning && !isEyeClosed) {
                         isEyeClosed = true;
                         blinkCounter++;
                         blinkCountEl.innerText = blinkCounter;
                         
-                        // Pulse Animation
+                        // Pulse Effect
                         blinkCountEl.classList.remove('scale-100');
                         blinkCountEl.classList.add('scale-110');
                         setTimeout(() => blinkCountEl.classList.remove('scale-110'), 100);
                     }
                 } else if (avgScore < OPEN_THRESHOLD) {
-                    // Visual Update
                     eyeIcon.innerText = "visibility";
                     eyeIcon.classList.replace("text-slate-400", "text-cyan-500");
                     isEyeClosed = false;
@@ -357,63 +405,83 @@
             }
         }
 
-        // --- 5. TIMER & BUTTON LOGIC ---
-        window.toggleScan = function() {
+        // --- 5. FLOW MANAGEMENT ---
+        
+        // Step 1: Click "Start Test" -> Show Instructions
+        window.initiateScan = function() {
+            if(isScanning) {
+                // If already running, stop it
+                window.stopScan();
+            } else {
+                // If idle, show instructions first
+                if(!webcamRunning) {
+                    alert("Please wait for camera to load.");
+                    return;
+                }
+                instructionModal.classList.remove("hidden");
+                instructionModal.classList.add("flex");
+            }
+        };
+
+        // Step 2: Click "I'm Ready" inside instructions -> Start Actual Scan
+        window.startActualTest = function() {
+            instructionModal.classList.add("hidden");
+            instructionModal.classList.remove("flex");
+
+            // Setup Scanning State
+            isScanning = true;
+            blinkCounter = 0;
+            blinkCountEl.innerText = "0";
+            remainingTime = 60;
+            
+            // UI Updates
             const btn = document.getElementById('scan-btn');
             const btnText = document.getElementById('btn-text');
             const btnIcon = document.getElementById('btn-icon');
             const overlay = document.getElementById('scan-overlay');
+            
+            overlay.classList.remove('hidden');
+            btnText.innerText = "Stop Scanning";
+            btn.classList.replace('bg-cyan-500', 'bg-red-500');
+            btn.classList.replace('hover:bg-cyan-600', 'hover:bg-red-600');
+            btnIcon.innerText = "stop_circle";
+            
+            // Progress Bar Reset
+            progressBar.style.width = "0%";
+            progressBar.classList.remove("bg-red-500");
+            progressBar.classList.add("bg-cyan-500");
+            timerDisplay.innerText = "01:00";
 
-            if (!isScanning) {
-                // --- START SESSION ---
-                isScanning = true;
-                blinkCounter = 0;
-                blinkCountEl.innerText = "0";
-                remainingTime = 60; // Reset to 60 seconds
-                
-                // UI Changes
-                overlay.classList.remove('hidden');
-                btnText.innerText = "Stop Scanning";
-                btn.classList.replace('bg-cyan-500', 'bg-red-500');
-                btn.classList.replace('hover:bg-cyan-600', 'hover:bg-red-600');
-                btn.classList.replace('shadow-[0_8px_20px_rgba(6,182,212,0.3)]', 'shadow-[0_8px_20px_rgba(239,68,68,0.3)]');
-                btnIcon.innerText = "stop_circle";
-                
-                // Reset Progress Bar
-                progressBar.style.width = "0%";
-                progressBar.classList.remove("bg-red-500");
-                progressBar.classList.add("bg-cyan-500");
-                
-                // Update Initial Timer
-                timerDisplay.innerText = "01:00";
+            // Start Timer Loop
+            timerInterval = setInterval(() => {
+                remainingTime--;
+                updateTimerUI();
 
-                // Start Countdown
-                timerInterval = setInterval(() => {
-                    remainingTime--;
-                    updateTimerUI();
+                if (remainingTime <= 0) {
+                    window.stopScan(); 
+                }
+            }, 1000);
+        };
 
-                    if (remainingTime <= 0) {
-                        // AUTO STOP
-                        window.toggleScan(); 
-                    }
-                }, 1000);
+        // Step 3: Stop Scan (Manual or Auto)
+        window.stopScan = function() {
+            isScanning = false;
+            clearInterval(timerInterval);
+            
+            // UI Reset
+            const btn = document.getElementById('scan-btn');
+            const btnText = document.getElementById('btn-text');
+            const btnIcon = document.getElementById('btn-icon');
+            const overlay = document.getElementById('scan-overlay');
+            
+            overlay.classList.add('hidden');
+            btnText.innerText = "Start 1-Min Test";
+            btn.classList.replace('bg-red-500', 'bg-cyan-500');
+            btn.classList.replace('hover:bg-red-600', 'hover:bg-cyan-600');
+            btnIcon.innerText = "play_circle";
 
-            } else {
-                // --- STOP SESSION ---
-                isScanning = false;
-                clearInterval(timerInterval);
-                
-                // UI Changes
-                overlay.classList.add('hidden');
-                btnText.innerText = "Start 1-Min Test";
-                btn.classList.replace('bg-red-500', 'bg-cyan-500');
-                btn.classList.replace('hover:bg-red-600', 'hover:bg-cyan-600');
-                btn.classList.replace('shadow-[0_8px_20px_rgba(239,68,68,0.3)]', 'shadow-[0_8px_20px_rgba(6,182,212,0.3)]');
-                btnIcon.innerText = "play_circle";
-
-                // Show Results
-                showResultModal();
-            }
+            // Show Results
+            showResultModal();
         };
 
         function updateTimerUI() {
@@ -421,11 +489,9 @@
             const secs = (remainingTime % 60).toString().padStart(2, '0');
             timerDisplay.innerText = `${mins}:${secs}`;
             
-            // Progress Bar Logic (Fills up as time reduces)
             const percentage = ((60 - remainingTime) / 60) * 100;
             progressBar.style.width = `${percentage}%`;
             
-            // Change color if time is low (last 10 secs)
             if(remainingTime < 10) {
                 progressBar.classList.remove("bg-cyan-500");
                 progressBar.classList.add("bg-red-500");
@@ -435,54 +501,62 @@
             }
         }
 
-        // --- 6. RESULT CALCULATION ---
+        // --- 6. REPORT GENERATION ---
         function showResultModal() {
-            // Logic based on actual duration passed (in case user stopped early)
             const durationUsed = 60 - remainingTime; 
             const durationMin = durationUsed / 60;
             
             let rate = 0;
-            // If less than 5 seconds, data is too small
             if (durationUsed < 5) {
-                rate = blinkCounter; // Raw count
+                rate = blinkCounter; 
             } else {
-                // Extrapolate to per minute if stopped early, or just take count if 1 min passed
                 rate = Math.round(blinkCounter / (durationMin || 1));
             }
 
             modalTotal.innerText = blinkCounter;
             modalRate.innerText = rate;
             
-            // Verdict Logic
-            modalVerdictBox.className = "rounded-xl p-4 mb-6 flex items-center gap-3 border-l-4";
-
+            // RESET Styles
+            modalVerdictBox.className = "rounded-xl p-4 flex items-center gap-3 border-l-4 shadow-sm";
+            
+            // VERDICT LOGIC
             if (durationUsed < 10) {
-                modalVerdict.innerText = "Insufficient Data";
+                modalVerdict.innerText = "Incomplete";
                 modalVerdictBox.classList.add("bg-slate-100", "border-slate-400", "text-slate-700");
                 modalIcon.innerText = "timer_off";
-            } else if (rate >= 12 && rate <= 28) {
-                modalVerdict.innerText = "Healthy Blink Rate";
+                modalIcon.className = "material-symbols-rounded text-3xl text-slate-500";
+                modalTip.innerText = "Please test for at least 10 seconds.";
+            } 
+            else if (rate >= 12 && rate <= 28) {
+                modalVerdict.innerText = "Healthy (Normal)";
                 modalVerdictBox.classList.add("bg-green-50", "border-green-500", "text-green-800");
                 modalIcon.innerText = "check_circle";
                 modalIcon.className = "material-symbols-rounded text-3xl text-green-600";
-            } else if (rate < 12) {
-                modalVerdict.innerText = "High Eye Strain";
+                modalTip.innerText = "Great! Your blinking pattern indicates low eye strain.";
+            } 
+            else if (rate < 12) {
+                modalVerdict.innerText = "High Strain (Low)";
                 modalVerdictBox.classList.add("bg-red-50", "border-red-500", "text-red-800");
                 modalIcon.innerText = "warning";
                 modalIcon.className = "material-symbols-rounded text-3xl text-red-600";
-            } else {
+                modalTip.innerText = "You are staring too much. Try the 20-20-20 rule.";
+            } 
+            else {
                 modalVerdict.innerText = "Fatigue / Anxiety";
                 modalVerdictBox.classList.add("bg-yellow-50", "border-yellow-500", "text-yellow-800");
                 modalIcon.innerText = "opacity";
                 modalIcon.className = "material-symbols-rounded text-3xl text-yellow-600";
+                modalTip.innerText = "High blink rate may indicate dry eyes or tiredness.";
             }
 
-            modal.classList.remove("hidden");
+            resultModal.classList.remove("hidden");
+            resultModal.classList.add("flex");
         }
 
         window.closeModal = function() {
-            modal.classList.add("hidden");
-            // Reset UI
+            resultModal.classList.add("hidden");
+            resultModal.classList.remove("flex");
+            // Reset Timer UI
             timerDisplay.innerText = "01:00";
             timerDisplay.classList.remove("text-red-500");
             progressBar.style.width = "0%";
@@ -491,7 +565,7 @@
         }
 
         function showError(msg) {
-            spinner.classList.add("hidden");
+            document.getElementById("spinner").classList.add("hidden");
             loadingText.classList.add("hidden");
             errorBox.classList.remove("hidden");
             errorBox.classList.add("flex");

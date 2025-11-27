@@ -3,11 +3,12 @@
 <head>
     <meta charset="utf-8"/>
     <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
-    <title>Smart Eye Strain Detector</title>
-    <!-- Tailwind CSS (Using CDN for prototype as requested) -->
+    <title>Smart Eye Strain Detector Pro</title>
+    <!-- Tailwind CSS (Full Build) -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Fonts -->
+    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+    <!-- Icons -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,1,0" />
     
     <script>
@@ -22,12 +23,17 @@
               surface: "#ffffff", // White
               textMain: "#155e75", // Cyan-900
               textSub: "#64748b", // Slate-500
+              success: "#10b981", // Emerald-500
+              warning: "#f59e0b", // Amber-500
+              danger: "#ef4444", // Red-500
             },
             fontFamily: {
               sans: ["Inter", "sans-serif"]
             },
             animation: {
               'scan': 'scan 2s linear infinite',
+              'pulse-slow': 'pulse 3s infinite',
+              'pop-in': 'popIn 0.3s ease-out forwards',
             },
             keyframes: {
               scan: {
@@ -35,6 +41,10 @@
                 '10%': { opacity: '1' },
                 '90%': { opacity: '1' },
                 '100%': { top: '100%', opacity: '0' },
+              },
+              popIn: {
+                '0%': { transform: 'scale(0.9)', opacity: '0' },
+                '100%': { transform: 'scale(1)', opacity: '1' }
               }
             }
           },
@@ -49,15 +59,15 @@
             color: #155e75;
         }
         .glass-panel {
-            background: rgba(255, 255, 255, 0.8);
+            background: rgba(255, 255, 255, 0.85);
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
             border: 1px solid rgba(6, 182, 212, 0.2);
-            box-shadow: 0 4px 20px rgba(6, 182, 212, 0.1);
+            box-shadow: 0 4px 20px rgba(6, 182, 212, 0.08);
         }
         /* Hide scrollbar */
         ::-webkit-scrollbar { width: 0px; background: transparent; }
-        video { transform: scaleX(-1); }
+        video { transform: scaleX(-1); } /* Mirror effect */
     </style>
 </head>
 <body class="min-h-[100dvh] flex justify-center bg-gradient-to-br from-cyan-50 via-white to-blue-50">
@@ -66,40 +76,44 @@
     <div class="w-full max-w-md h-[100dvh] flex flex-col relative overflow-hidden bg-white shadow-2xl sm:border-x sm:border-cyan-100">
         
         <!-- Header -->
-        <header class="flex items-center justify-between px-6 py-5 z-20 bg-white/50 backdrop-blur-sm sticky top-0">
+        <header class="flex items-center justify-between px-6 py-5 z-20 bg-white/60 backdrop-blur-md sticky top-0 border-b border-cyan-50">
             <button class="p-2 rounded-full hover:bg-cyan-100 transition-colors text-cyan-700">
                 <span class="material-symbols-rounded">arrow_back</span>
             </button>
-            <h1 class="text-lg font-bold tracking-wide text-cyan-900">Eye Guard AI</h1>
+            <h1 class="text-lg font-bold tracking-wide text-cyan-900">Eye Guard Pro</h1>
             <button class="p-2 rounded-full hover:bg-cyan-100 transition-colors text-cyan-700">
                 <span class="material-symbols-rounded">settings</span>
             </button>
         </header>
 
         <!-- Main Content -->
-        <main class="flex-1 flex flex-col px-6 gap-6 overflow-y-auto pb-28">
+        <main class="flex-1 flex flex-col px-6 gap-6 overflow-y-auto pb-32 pt-4">
             
             <!-- Camera Viewfinder -->
-            <div class="relative w-full aspect-[4/5] rounded-3xl overflow-hidden shadow-xl border-4 border-white bg-slate-100 group">
+            <div class="relative w-full aspect-[4/5] rounded-3xl overflow-hidden shadow-xl border-4 border-white bg-slate-100 group ring-1 ring-cyan-100">
                 <!-- Live Tag -->
-                <div class="absolute top-4 left-4 z-10 px-3 py-1 bg-white/80 backdrop-blur-md border border-red-500/20 rounded-full flex items-center gap-2 shadow-sm">
+                <div class="absolute top-4 left-4 z-10 px-3 py-1 bg-white/90 backdrop-blur-md border border-red-500/20 rounded-full flex items-center gap-2 shadow-sm">
                     <div class="w-2 h-2 rounded-full bg-red-500 animate-pulse"></div>
-                    <span class="text-xs font-bold text-red-500 uppercase tracking-wider">Live Cam</span>
+                    <span class="text-xs font-bold text-red-500 uppercase tracking-wider">Live</span>
                 </div>
 
                 <!-- Real Camera Feed -->
                 <video id="webcam" class="w-full h-full object-cover" autoplay playsinline muted></video>
                 
-                <!-- Scanning Overlay (Hidden by default) -->
-                <div id="scan-overlay" class="absolute inset-0 bg-cyan-500/10 hidden">
+                <!-- Scanning Overlay (Visible only when scanning) -->
+                <div id="scan-overlay" class="absolute inset-0 bg-cyan-500/5 hidden">
                     <div class="absolute w-full h-1 bg-gradient-to-r from-transparent via-cyan-400 to-transparent shadow-[0_0_15px_rgba(34,211,238,0.8)] animate-scan"></div>
-                    <div class="absolute inset-0 border-2 border-cyan-400/30 rounded-3xl"></div>
+                    <!-- Corner Brackets -->
+                    <div class="absolute top-4 left-4 w-8 h-8 border-t-4 border-l-4 border-cyan-500 rounded-tl-lg"></div>
+                    <div class="absolute top-4 right-4 w-8 h-8 border-t-4 border-r-4 border-cyan-500 rounded-tr-lg"></div>
+                    <div class="absolute bottom-4 left-4 w-8 h-8 border-b-4 border-l-4 border-cyan-500 rounded-bl-lg"></div>
+                    <div class="absolute bottom-4 right-4 w-8 h-8 border-b-4 border-r-4 border-cyan-500 rounded-br-lg"></div>
                 </div>
 
                 <!-- Loading/Error UI -->
                 <div id="camera-loading" class="absolute inset-0 flex flex-col items-center justify-center bg-gray-50 z-20 text-center p-6">
                     <div id="spinner" class="w-10 h-10 border-4 border-cyan-200 border-t-cyan-500 rounded-full animate-spin mb-3"></div>
-                    <p id="loading-text" class="text-sm text-cyan-700 font-medium">Initializing AI...</p>
+                    <p id="loading-text" class="text-sm text-cyan-700 font-medium">Initializing Eye Tracker...</p>
                     
                     <!-- Error Box -->
                     <div id="error-box" class="hidden flex-col items-center gap-2 mt-2">
@@ -111,40 +125,75 @@
                 </div>
             </div>
 
-            <!-- Stats Card -->
+            <!-- Stats Card (Live) -->
             <div class="glass-panel rounded-2xl p-5 flex flex-col gap-4">
                 <div class="flex justify-between items-end">
                     <div>
-                        <p class="text-cyan-600 text-sm font-semibold mb-1 uppercase tracking-wider">Real-time Blink Rate</p>
+                        <p class="text-cyan-600 text-xs font-bold uppercase tracking-widest mb-1">Session Blinks</p>
                         <div class="flex items-baseline gap-1">
-                            <span id="blink-count" class="text-5xl font-bold text-cyan-900">0</span>
-                            <span class="text-sm text-cyan-600 font-medium">blinks / min</span>
+                            <span id="blink-count" class="text-5xl font-bold text-cyan-900 tracking-tight">0</span>
+                            <span class="text-sm text-cyan-600 font-medium">total</span>
                         </div>
                     </div>
                     <!-- Eye Icon Visualizer -->
                     <div class="relative w-14 h-14 bg-cyan-50 rounded-full flex items-center justify-center border border-cyan-100 shadow-inner">
-                         <span id="eye-icon" class="material-symbols-rounded text-4xl text-cyan-500 transition-all duration-100">visibility</span>
+                         <span id="eye-icon" class="material-symbols-rounded text-4xl text-cyan-500 transition-all duration-150">visibility</span>
                     </div>
                 </div>
 
-                <!-- Strain Meter -->
-                <div class="space-y-2">
-                    <div class="flex justify-between text-xs font-bold uppercase tracking-wider text-cyan-700">
-                        <span>Eye Strain Level</span>
-                        <span id="status-text" class="text-green-500">Detecting...</span>
+                <!-- Timer & Status -->
+                <div class="flex items-center justify-between bg-white/50 rounded-xl p-3 border border-cyan-100">
+                    <div class="flex flex-col">
+                        <span class="text-[10px] text-slate-400 uppercase font-bold">Duration</span>
+                        <span id="timer-display" class="text-lg font-mono font-medium text-slate-700">00:00</span>
                     </div>
-                    <!-- Custom Segmented Control -->
-                    <div class="h-3 w-full bg-slate-100 rounded-full overflow-hidden flex shadow-inner">
-                        <div id="bar-low" class="h-full bg-green-400 w-1/3 transition-all duration-500 opacity-20"></div>
-                        <div id="bar-med" class="h-full bg-yellow-400 w-1/3 transition-all duration-500 opacity-20"></div>
-                        <div id="bar-high" class="h-full bg-red-400 w-1/3 transition-all duration-500 opacity-20"></div>
+                    <div class="h-8 w-[1px] bg-slate-200"></div>
+                    <div class="flex flex-col items-end">
+                         <span class="text-[10px] text-slate-400 uppercase font-bold">Status</span>
+                         <span id="status-indicator" class="text-sm font-semibold text-slate-400">Standby</span>
                     </div>
                 </div>
-                
-                <p class="text-xs text-slate-400 text-center mt-1">Make sure you are in a well-lit room.</p>
             </div>
 
         </main>
+
+        <!-- RESULT POPUP MODAL (Hidden by default) -->
+        <div id="result-modal" class="absolute inset-0 z-50 bg-black/40 backdrop-blur-sm hidden flex items-center justify-center p-6">
+            <div class="bg-white rounded-3xl w-full max-w-sm p-6 shadow-2xl animate-pop-in border border-white/50">
+                <div class="flex justify-center mb-4">
+                    <div class="w-16 h-16 rounded-full bg-cyan-50 flex items-center justify-center border-4 border-white shadow-lg">
+                        <span class="material-symbols-rounded text-4xl text-cyan-600">analytics</span>
+                    </div>
+                </div>
+                
+                <h2 class="text-2xl font-bold text-center text-slate-800 mb-1">Session Report</h2>
+                <p class="text-center text-slate-500 text-sm mb-6">Here is your eye health analysis</p>
+
+                <div class="grid grid-cols-2 gap-4 mb-6">
+                    <div class="bg-slate-50 p-3 rounded-2xl text-center">
+                        <p class="text-xs text-slate-400 uppercase font-bold">Blinks / Min</p>
+                        <p id="modal-rate" class="text-2xl font-bold text-cyan-700">--</p>
+                    </div>
+                    <div class="bg-slate-50 p-3 rounded-2xl text-center">
+                        <p class="text-xs text-slate-400 uppercase font-bold">Total Blinks</p>
+                        <p id="modal-total" class="text-2xl font-bold text-slate-700">--</p>
+                    </div>
+                </div>
+
+                <!-- Strain Result Box -->
+                <div id="modal-verdict-box" class="rounded-xl p-4 mb-6 flex items-center gap-3 border-l-4">
+                    <span id="modal-icon" class="material-symbols-rounded text-3xl">check_circle</span>
+                    <div>
+                        <p class="text-xs opacity-80 font-bold uppercase">Strain Level</p>
+                        <p id="modal-verdict" class="text-lg font-bold">Calculating...</p>
+                    </div>
+                </div>
+
+                <button onclick="window.closeModal()" class="w-full py-3.5 bg-slate-900 text-white rounded-xl font-semibold shadow-lg active:scale-95 transition-transform">
+                    Close Report
+                </button>
+            </div>
+        </div>
 
         <!-- Bottom Action Bar (Fixed) -->
         <div class="absolute bottom-0 left-0 w-full p-6 bg-gradient-to-t from-white via-white/95 to-transparent z-30">
@@ -169,25 +218,42 @@
             FilesetResolver
         } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.0";
 
+        // DOM Elements
         const video = document.getElementById("webcam");
-        const blinkCountElement = document.getElementById("blink-count");
+        const blinkCountEl = document.getElementById("blink-count");
         const eyeIcon = document.getElementById("eye-icon");
+        const timerDisplay = document.getElementById("timer-display");
+        const statusIndicator = document.getElementById("status-indicator");
+        
+        // Modal Elements
+        const modal = document.getElementById("result-modal");
+        const modalRate = document.getElementById("modal-rate");
+        const modalTotal = document.getElementById("modal-total");
+        const modalVerdict = document.getElementById("modal-verdict");
+        const modalVerdictBox = document.getElementById("modal-verdict-box");
+        const modalIcon = document.getElementById("modal-icon");
+
+        // UI Loading Elements
         const loadingDiv = document.getElementById("camera-loading");
         const spinner = document.getElementById("spinner");
         const loadingText = document.getElementById("loading-text");
         const errorBox = document.getElementById("error-box");
         const errorMsg = document.getElementById("error-msg");
         
+        // Logic Variables
         let faceLandmarker;
         let runningMode = "VIDEO";
         let webcamRunning = false;
         let lastVideoTime = -1;
-        let startTime = Date.now();
+        
+        // Session Variables
+        let isScanning = false;
         let blinkCounter = 0;
         let isEyeClosed = false;
-        let isScanning = false;
+        let sessionStartTime = 0;
+        let timerInterval = null;
 
-        // Initialize FaceLandmarker
+        // --- 1. SETUP AI ---
         async function createFaceLandmarker() {
             try {
                 const filesetResolver = await FilesetResolver.forVisionTasks(
@@ -209,15 +275,15 @@
                 startCamera();
 
             } catch (error) {
-                showError("Error loading AI Model. Please check internet connection.");
+                showError("Error loading AI. Refresh page.");
                 console.error(error);
             }
         }
 
+        // --- 2. CAMERA HANDLING ---
         function startCamera() {
-            // Check if getUserMedia exists (Safe Check)
             if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-                showError("Browser does not support Camera access. Try using Chrome on HTTPS.");
+                showError("Browser not supported. Use Chrome (HTTPS).");
                 return;
             }
 
@@ -235,105 +301,184 @@
                 video.addEventListener("loadeddata", predictWebcam);
                 loadingDiv.classList.add("hidden");
                 webcamRunning = true;
+                statusIndicator.innerText = "Ready to Start";
             })
             .catch((err) => {
-                console.error("Camera Error:", err);
-                // Specific error messages for user understanding
-                if(err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
-                    showError("Camera Permission Denied. Please allow access in settings.");
-                } else if (err.name === 'NotFoundError') {
-                    showError("No Camera Found.");
-                } else {
-                    showError("Camera Error: Secure Connection (HTTPS) required.");
-                }
+                if(err.name === 'NotAllowedError') showError("Permission Denied. Allow Camera.");
+                else showError("Camera Error. Use HTTPS.");
             });
         }
 
+        // --- 3. PREDICTION LOOP ---
         async function predictWebcam() {
             if (lastVideoTime !== video.currentTime) {
                 lastVideoTime = video.currentTime;
+                // Detect Face
                 let results = faceLandmarker.detectForVideo(video, Date.now());
 
                 if (results.faceBlendshapes && results.faceBlendshapes.length > 0) {
                     detectBlink(results.faceBlendshapes[0].categories);
                 }
             }
-
-            if (webcamRunning) {
-                window.requestAnimationFrame(predictWebcam);
-            }
+            if (webcamRunning) window.requestAnimationFrame(predictWebcam);
         }
 
+        // --- 4. BLINK DETECTION LOGIC (SENSITIVE) ---
         function detectBlink(blendshapes) {
+            // Only process logic if scanning is active for data, 
+            // BUT we still want to visualize the eye icon even if not recording data.
+            
             const eyeBlinkLeft = blendshapes.find(s => s.categoryName === 'eyeBlinkLeft');
             const eyeBlinkRight = blendshapes.find(s => s.categoryName === 'eyeBlinkRight');
 
             if (eyeBlinkLeft && eyeBlinkRight) {
-                // > 0.5 means closed
-                const isClosedNow = (eyeBlinkLeft.score > 0.5 && eyeBlinkRight.score > 0.5);
+                // SENSITIVITY TWEAK: Lowered to 0.4 (from 0.5) to catch slight blinks
+                // Added hysteresis: Must go below 0.35 to reset.
+                
+                const avgScore = (eyeBlinkLeft.score + eyeBlinkRight.score) / 2;
+                const CLOSE_THRESHOLD = 0.4; // More sensitive
+                const OPEN_THRESHOLD = 0.3;  // Reset point
 
-                if (isClosedNow) {
+                if (avgScore > CLOSE_THRESHOLD) {
+                    // Visual Update
                     eyeIcon.innerText = "visibility_off";
                     eyeIcon.classList.replace("text-cyan-500", "text-slate-400");
                     
-                    if (!isEyeClosed && isScanning) {
+                    // Logic Update (Only if scanning)
+                    if (isScanning && !isEyeClosed) {
                         isEyeClosed = true;
                         blinkCounter++;
-                        updateStats();
+                        blinkCountEl.innerText = blinkCounter;
+                        
+                        // Small animation on count
+                        blinkCountEl.classList.remove('scale-100');
+                        blinkCountEl.classList.add('scale-110');
+                        setTimeout(() => blinkCountEl.classList.remove('scale-110'), 100);
                     }
-                } else {
+                } else if (avgScore < OPEN_THRESHOLD) {
+                    // Visual Update
                     eyeIcon.innerText = "visibility";
                     eyeIcon.classList.replace("text-slate-400", "text-cyan-500");
+                    
+                    // Logic Reset
                     isEyeClosed = false;
                 }
             }
         }
 
-        function updateStats() {
-            const now = Date.now();
-            const minutesElapsed = (now - startTime) / 60000;
-            
-            let displayRate = 0;
-            if (minutesElapsed < 0.2) {
-                displayRate = blinkCounter; 
+        // --- 5. TIMER & BUTTON LOGIC ---
+        window.toggleScan = function() {
+            const btn = document.getElementById('scan-btn');
+            const btnText = document.getElementById('btn-text');
+            const btnIcon = document.getElementById('btn-icon');
+            const overlay = document.getElementById('scan-overlay');
+
+            if (!isScanning) {
+                // STARTING
+                isScanning = true;
+                blinkCounter = 0;
+                blinkCountEl.innerText = "0";
+                sessionStartTime = Date.now();
+                
+                // UI Changes
+                overlay.classList.remove('hidden');
+                btnText.innerText = "Stop & Result";
+                btn.classList.replace('bg-cyan-500', 'bg-red-500');
+                btn.classList.replace('hover:bg-cyan-600', 'hover:bg-red-600');
+                btn.classList.replace('shadow-[0_8px_20px_rgba(6,182,212,0.3)]', 'shadow-[0_8px_20px_rgba(239,68,68,0.3)]');
+                btnIcon.innerText = "stop_circle";
+                statusIndicator.innerText = "Tracking...";
+                statusIndicator.className = "text-sm font-bold text-red-500 animate-pulse";
+
+                // Start Timer
+                timerInterval = setInterval(updateTimer, 1000);
+
             } else {
-                displayRate = Math.round(blinkCounter / minutesElapsed);
+                // STOPPING
+                isScanning = false;
+                clearInterval(timerInterval);
+                
+                // UI Changes
+                overlay.classList.add('hidden');
+                btnText.innerText = "Start Tracking";
+                btn.classList.replace('bg-red-500', 'bg-cyan-500');
+                btn.classList.replace('hover:bg-red-600', 'hover:bg-cyan-600');
+                btn.classList.replace('shadow-[0_8px_20px_rgba(239,68,68,0.3)]', 'shadow-[0_8px_20px_rgba(6,182,212,0.3)]');
+                btnIcon.innerText = "play_circle";
+                statusIndicator.innerText = "Session Ended";
+                statusIndicator.className = "text-sm font-semibold text-slate-400";
+
+                // Show Results
+                showResultModal();
             }
-            
-            blinkCountElement.innerText = displayRate;
-            updateStrainVisuals(displayRate, minutesElapsed);
+        };
+
+        function updateTimer() {
+            const now = Date.now();
+            const diff = Math.floor((now - sessionStartTime) / 1000);
+            const mins = Math.floor(diff / 60).toString().padStart(2, '0');
+            const secs = (diff % 60).toString().padStart(2, '0');
+            timerDisplay.innerText = `${mins}:${secs}`;
         }
 
-        function updateStrainVisuals(rate, minutes) {
-            const barLow = document.getElementById('bar-low');
-            const barMed = document.getElementById('bar-med');
-            const barHigh = document.getElementById('bar-high');
-            const statusText = document.getElementById('status-text');
-
-            [barLow, barMed, barHigh].forEach(b => b.style.opacity = "0.2");
-
-            if (minutes < 0.2) {
-                statusText.innerText = "Calibrating...";
-                statusText.className = "text-cyan-500 font-medium";
-                return;
-            }
-
-            if (rate >= 12) {
-                statusText.innerText = "Healthy";
-                statusText.className = "text-green-500 font-bold uppercase tracking-wider";
-                barLow.style.opacity = "1";
-            } else if (rate < 8) {
-                statusText.innerText = "High Strain!";
-                statusText.className = "text-red-500 font-bold uppercase tracking-wider";
-                barLow.style.opacity = "1";
-                barMed.style.opacity = "1";
-                barHigh.style.opacity = "1";
+        // --- 6. RESULT CALCULATION ---
+        function showResultModal() {
+            const durationSec = Math.floor((Date.now() - sessionStartTime) / 1000);
+            const durationMin = durationSec / 60;
+            
+            // Calculate BPM (Blinks Per Minute)
+            // If less than 1 min, extrapolate, but cap if duration is very short
+            let rate = 0;
+            if (durationMin < 0.1) {
+                // Too short to judge accurately
+                rate = blinkCounter; 
             } else {
-                statusText.innerText = "Moderate";
-                statusText.className = "text-yellow-500 font-bold uppercase tracking-wider";
-                barLow.style.opacity = "1";
-                barMed.style.opacity = "1";
+                rate = Math.round(blinkCounter / durationMin);
             }
+
+            // Update Modal Content
+            modalTotal.innerText = blinkCounter;
+            modalRate.innerText = rate;
+            
+            // Logic for Verdict
+            // Normal blink rate is ~15-20. 
+            // < 10 indicates staring/strain.
+            // > 30 indicates anxiety or fatigue.
+            
+            // Reset Classes
+            modalVerdictBox.className = "rounded-xl p-4 mb-6 flex items-center gap-3 border-l-4";
+
+            if (durationSec < 5) {
+                modalVerdict.innerText = "Too Short";
+                modalVerdictBox.classList.add("bg-slate-100", "border-slate-400", "text-slate-700");
+                modalIcon.innerText = "timer_off";
+                modalIcon.className = "material-symbols-rounded text-3xl text-slate-500";
+            } else if (rate >= 10 && rate <= 25) {
+                modalVerdict.innerText = "Healthy Range";
+                modalVerdictBox.classList.add("bg-green-50", "border-green-500", "text-green-800");
+                modalIcon.innerText = "check_circle";
+                modalIcon.className = "material-symbols-rounded text-3xl text-green-600";
+            } else if (rate < 10) {
+                modalVerdict.innerText = "High Strain (Low Blink)";
+                modalVerdictBox.classList.add("bg-red-50", "border-red-500", "text-red-800");
+                modalIcon.innerText = "warning";
+                modalIcon.className = "material-symbols-rounded text-3xl text-red-600";
+            } else {
+                modalVerdict.innerText = "Fatigue / Dry Eyes";
+                modalVerdictBox.classList.add("bg-yellow-50", "border-yellow-500", "text-yellow-800");
+                modalIcon.innerText = "opacity";
+                modalIcon.className = "material-symbols-rounded text-3xl text-yellow-600";
+            }
+
+            // Show Modal
+            modal.classList.remove("hidden");
+        }
+
+        window.closeModal = function() {
+            modal.classList.add("hidden");
+            // Reset Timer Text
+            timerDisplay.innerText = "00:00";
+            statusIndicator.innerText = "Standby";
         }
 
         function showError(msg) {
@@ -344,34 +489,7 @@
             errorMsg.innerText = msg;
         }
 
-        // Expose function to global scope
-        window.toggleScan = function() {
-            isScanning = !isScanning;
-            const btn = document.getElementById('scan-btn');
-            const btnText = document.getElementById('btn-text');
-            const btnIcon = document.getElementById('btn-icon');
-            const overlay = document.getElementById('scan-overlay');
-
-            if (isScanning) {
-                overlay.classList.remove('hidden');
-                btnText.innerText = "Stop Tracking";
-                btn.classList.replace('bg-cyan-500', 'bg-red-500');
-                btn.classList.replace('hover:bg-cyan-600', 'hover:bg-red-600');
-                btnIcon.innerText = "stop_circle";
-                
-                blinkCounter = 0;
-                startTime = Date.now();
-                blinkCountElement.innerText = "0";
-            } else {
-                overlay.classList.add('hidden');
-                btnText.innerText = "Start Tracking";
-                btn.classList.replace('bg-red-500', 'bg-cyan-500');
-                btn.classList.replace('hover:bg-red-600', 'hover:bg-cyan-600');
-                btnIcon.innerText = "play_circle";
-            }
-        };
-
-        // Start
+        // Initialize
         createFaceLandmarker();
     </script>
 </body>

@@ -1,994 +1,303 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="utf-8"/>
-    <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
-    <title>Smart Eye Strain Detector Pro + Ultimate Tips</title>
-    <!-- Tailwind CSS (Full Build) -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>College Bus Tracker (Live)</title>
+
+    <!-- Leaflet CSS (Map Styles) -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
-    <!-- Icons -->
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,1,0" />
-    
-    <script>
-      tailwind.config = {
-        theme: {
-          extend: {
-            colors: {
-              primary: "#06b6d4", // Cyan-500
-              primaryDark: "#0891b2", // Cyan-600
-              secondary: "#ecfeff", // Cyan-50
-              accent: "#22d3ee", // Cyan-400
-              surface: "#ffffff", // White
-              textMain: "#155e75", // Cyan-900
-              textSub: "#64748b", // Slate-500
-              success: "#10b981", // Emerald-500
-              warning: "#f59e0b", // Amber-500
-              danger: "#ef4444", // Red-500
-            },
-            fontFamily: {
-              sans: ["Inter", "sans-serif"]
-            },
-            animation: {
-              'scan': 'scan 2s linear infinite',
-              'pop-in': 'popIn 0.3s ease-out forwards',
-              'fade-in': 'fadeIn 0.3s ease-out forwards',
-              'slide-up': 'slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards',
-              'slide-down': 'slideDown 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards',
-            },
-            keyframes: {
-              scan: {
-                '0%': { top: '0%', opacity: '0' },
-                '10%': { opacity: '1' },
-                '90%': { opacity: '1' },
-                '100%': { top: '100%', opacity: '0' },
-              },
-              popIn: {
-                '0%': { transform: 'scale(0.9)', opacity: '0' },
-                '100%': { transform: 'scale(1)', opacity: '1' }
-              },
-              fadeIn: {
-                '0%': { opacity: '0' },
-                '100%': { opacity: '1' }
-              },
-              slideUp: {
-                '0%': { transform: 'translateY(100%)' },
-                '100%': { transform: 'translateY(0)' }
-              },
-              slideDown: {
-                '0%': { transform: 'translateY(0)' },
-                '100%': { transform: 'translateY(100%)' }
-              }
-            }
-          },
-        },
-      }
-    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+
     <style>
-        body {
-            overscroll-behavior-y: none;
-            font-family: 'Inter', sans-serif;
-            background-color: #ecfeff;
-            color: #155e75;
-        }
-        .glass-panel {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(6, 182, 212, 0.2);
-            box-shadow: 0 4px 20px rgba(6, 182, 212, 0.08);
-        }
-        /* Hide scrollbar but keep functionality */
-        .hide-scroll::-webkit-scrollbar { width: 0px; background: transparent; }
-        video { transform: scaleX(-1); } /* Mirror effect */
+        /* --- CSS STYLES --- */
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+        body { background-color: #f0f2f5; height: 100vh; overflow: hidden; }
+
+        /* Utility Classes */
+        .hidden { display: none !important; }
+        .full-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; background: #fff; z-index: 10; }
         
-        /* Typography for Article */
-        .article-content p { margin-bottom: 1rem; line-height: 1.7; color: #334155; }
-        .article-content h3 { font-size: 1.125rem; font-weight: 700; color: #0e7490; margin-top: 1.5rem; margin-bottom: 0.5rem; }
-        .article-content ul { list-style-type: disc; padding-left: 1.5rem; margin-bottom: 1rem; color: #475569; }
-        .article-content li { margin-bottom: 0.5rem; }
+        /* Home Screen */
+        #screen-home { justify-content: center; align-items: center; background: linear-gradient(135deg, #0f2027, #203a43, #2c5364); color: white; padding: 20px; text-align: center; }
+        .logo-text { font-size: 2.5rem; margin-bottom: 10px; }
+        .sub-text { opacity: 0.8; margin-bottom: 40px; }
+        .btn-select { width: 100%; max-width: 300px; padding: 18px; margin: 10px 0; border: none; border-radius: 12px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .btn-driver { background: #ffcc00; color: #000; }
+        .btn-student { background: #ffffff; color: #333; }
+
+        /* Driver Screen */
+        #screen-driver { background: #1a1a1a; color: white; padding: 20px; align-items: center; justify-content: center; }
+        .status-card { background: #2d2d2d; padding: 30px; border-radius: 20px; width: 100%; max-width: 350px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .indicator { width: 15px; height: 15px; background: #555; border-radius: 50%; margin: 0 auto 15px; transition: 0.3s; }
+        .indicator.active { background: #00ff00; box-shadow: 0 0 15px #00ff00; animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+        .coord-display { font-family: monospace; font-size: 0.8rem; color: #888; margin-top: 15px; background: #000; padding: 10px; border-radius: 8px; }
+        .btn-action { width: 100%; padding: 15px; border-radius: 10px; border: none; font-weight: bold; margin-top: 20px; cursor: pointer; font-size: 1rem; }
+        .btn-start { background: #00e676; color: #000; }
+        .btn-stop { background: #ff3d00; color: #fff; }
+
+        /* Student Screen (Map) */
+        #map { height: 100%; width: 100%; z-index: 1; }
+        
+        /* Bottom Sheet (Rapido Style) */
+        .bottom-sheet { position: absolute; bottom: 0; left: 0; width: 100%; background: white; border-top-left-radius: 25px; border-top-right-radius: 25px; padding: 25px; box-shadow: 0 -5px 30px rgba(0,0,0,0.15); z-index: 999; transform: translateY(100%); transition: transform 0.3s ease-out; }
+        .bottom-sheet.show { transform: translateY(0); }
+        .sheet-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .bus-title { font-size: 1.2rem; font-weight: 700; color: #333; }
+        .status-badge { background: #e0f2f1; color: #00695c; padding: 5px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; }
+        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .info-box { background: #f5f5f5; padding: 15px; border-radius: 12px; text-align: center; }
+        .info-value { font-size: 1.1rem; font-weight: 700; color: #333; }
+        .info-label { font-size: 0.8rem; color: #777; margin-top: 5px; }
+
+        /* Back Button */
+        .back-btn { position: absolute; top: 20px; left: 20px; z-index: 1000; background: white; width: 40px; height: 40px; border-radius: 50%; border: none; font-size: 1.2rem; box-shadow: 0 4px 10px rgba(0,0,0,0.2); cursor: pointer; display: flex; align-items: center; justify-content: center; }
+
+        /* Map Marker Icon */
+        .bus-icon-marker { font-size: 35px; text-align: center; line-height: 1; filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.3)); }
     </style>
 </head>
-<body class="min-h-[100dvh] flex justify-center bg-gradient-to-br from-cyan-50 via-white to-blue-50">
+<body>
 
-    <!-- Mobile Container -->
-    <div class="w-full max-w-md h-[100dvh] flex flex-col relative overflow-hidden bg-white shadow-2xl sm:border-x sm:border-cyan-100">
+    <!-- SCREEN 1: HOME -->
+    <div id="screen-home" class="full-screen">
+        <div class="logo-text">🚌</div>
+        <h2>College Bus Tracker</h2>
+        <p class="sub-text">Live Location System</p>
         
-        <!-- Header -->
-        <header class="flex items-center justify-between px-6 py-5 z-20 bg-white/80 backdrop-blur-md sticky top-0 border-b border-cyan-50">
-            <button class="p-2 rounded-full hover:bg-cyan-100 transition-colors text-cyan-700">
-                <span class="material-symbols-rounded">arrow_back</span>
-            </button>
-            <h1 class="text-lg font-bold tracking-wide text-cyan-900">Eye Guard Pro</h1>
-            <button class="p-2 rounded-full hover:bg-cyan-100 transition-colors text-cyan-700">
-                <span class="material-symbols-rounded">settings</span>
-            </button>
-        </header>
-
-        <!-- Main Content (Camera & Stats) -->
-        <main class="flex-1 flex flex-col px-6 gap-6 overflow-y-auto pb-32 pt-4 hide-scroll">
-            
-            <!-- Camera Viewfinder -->
-            <div class="relative w-full aspect-[4/5] rounded-3xl overflow-hidden shadow-xl border-4 border-white bg-slate-100 group ring-1 ring-cyan-100">
-                <!-- Live Tag -->
-                <div class="absolute top-4 left-4 z-10 px-3 py-1 bg-white/90 backdrop-blur-md border border-red-500/20 rounded-full flex items-center gap-2 shadow-sm">
-                    <div class="w-2 h-2 rounded-full bg-red-500 animate-pulse"></div>
-                    <span class="text-xs font-bold text-red-500 uppercase tracking-wider">Live</span>
-                </div>
-
-                <!-- Real Camera Feed -->
-                <video id="webcam" class="w-full h-full object-cover" autoplay playsinline muted></video>
-                
-                <!-- Scanning Overlay (Visible only when scanning) -->
-                <div id="scan-overlay" class="absolute inset-0 bg-cyan-500/5 hidden">
-                    <div class="absolute w-full h-1 bg-gradient-to-r from-transparent via-cyan-400 to-transparent shadow-[0_0_15px_rgba(34,211,238,0.8)] animate-scan"></div>
-                    <!-- Corner Brackets -->
-                    <div class="absolute top-4 left-4 w-8 h-8 border-t-4 border-l-4 border-cyan-500 rounded-tl-lg"></div>
-                    <div class="absolute top-4 right-4 w-8 h-8 border-t-4 border-r-4 border-cyan-500 rounded-tr-lg"></div>
-                    <div class="absolute bottom-4 left-4 w-8 h-8 border-b-4 border-l-4 border-cyan-500 rounded-bl-lg"></div>
-                    <div class="absolute bottom-4 right-4 w-8 h-8 border-b-4 border-r-4 border-cyan-500 rounded-br-lg"></div>
-                </div>
-
-                <!-- Loading/Error UI -->
-                <div id="camera-loading" class="absolute inset-0 flex flex-col items-center justify-center bg-gray-50 z-20 text-center p-6">
-                    <div id="spinner" class="w-10 h-10 border-4 border-cyan-200 border-t-cyan-500 rounded-full animate-spin mb-3"></div>
-                    <p id="loading-text" class="text-sm text-cyan-700 font-medium">Initializing Eye Tracker...</p>
-                    
-                    <!-- Error Box -->
-                    <div id="error-box" class="hidden flex-col items-center gap-2 mt-2">
-                        <span class="material-symbols-rounded text-red-500 text-3xl">error</span>
-                        <p id="error-msg" class="text-xs text-red-600 bg-red-50 p-3 rounded-lg border border-red-100 w-full">
-                            Unknown Error
-                        </p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Stats Card (Live) -->
-            <div class="glass-panel rounded-2xl p-5 flex flex-col gap-4 relative overflow-hidden">
-                <div class="flex justify-between items-end relative z-10">
-                    <div>
-                        <p class="text-cyan-600 text-xs font-bold uppercase tracking-widest mb-1">Session Blinks</p>
-                        <div class="flex items-baseline gap-1">
-                            <span id="blink-count" class="text-5xl font-bold text-cyan-900 tracking-tight">0</span>
-                            <span class="text-sm text-cyan-600 font-medium">total</span>
-                        </div>
-                    </div>
-                    <!-- Eye Icon Visualizer -->
-                    <div class="relative w-14 h-14 bg-cyan-50 rounded-full flex items-center justify-center border border-cyan-100 shadow-inner">
-                         <span id="eye-icon" class="material-symbols-rounded text-4xl text-cyan-500 transition-all duration-150">visibility</span>
-                    </div>
-                </div>
-
-                <!-- Timer & Status -->
-                <div class="flex flex-col gap-2 relative z-10">
-                    <div class="flex items-center justify-between">
-                        <span class="text-[10px] text-slate-400 uppercase font-bold">Time Remaining</span>
-                        <span id="timer-display" class="text-lg font-mono font-bold text-cyan-700">01:00</span>
-                    </div>
-                    
-                    <!-- Progress Bar Container -->
-                    <div class="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
-                        <div id="progress-bar" class="h-full bg-cyan-500 w-0 transition-all duration-1000 ease-linear rounded-full"></div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="h-10"></div> <!-- Spacer -->
-
-        </main>
-
-        <!-- ========================================================================= -->
-        <!-- TIPS LIST VIEW (The 80+ Tips Page) -->
-        <!-- ========================================================================= -->
-        <div id="tips-page" class="absolute inset-0 z-40 bg-slate-50 flex flex-col transform translate-y-full transition-transform duration-500">
-            <!-- Tips Header -->
-            <header class="flex items-center gap-4 px-6 py-5 bg-white shadow-sm border-b border-slate-100 sticky top-0 z-10">
-                <button onclick="window.closeTips()" class="p-2 -ml-2 rounded-full hover:bg-slate-100 transition-colors text-slate-600">
-                    <span class="material-symbols-rounded text-2xl">expand_more</span>
-                </button>
-                <div>
-                    <h2 class="text-xl font-bold text-slate-800">Eye Care Encyclopedia</h2>
-                    <p class="text-xs text-slate-500">Expert advice for healthy vision</p>
-                </div>
-            </header>
-
-            <!-- Tips Scrollable Content -->
-            <div class="flex-1 overflow-y-auto p-6 hide-scroll">
-                <div class="mb-4 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-2xl p-5 text-white shadow-lg">
-                    <div class="flex items-start gap-4">
-                        <span class="material-symbols-rounded text-4xl bg-white/20 p-2 rounded-xl">auto_stories</span>
-                        <div>
-                            <h3 class="font-bold text-lg mb-1">Knowledge is Power</h3>
-                            <p class="text-sm opacity-90 leading-relaxed">Browse through our extensive library of eye care tips. Click on any card to read detailed instructions.</p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Container for Generated Tips -->
-                <div id="tips-container" class="space-y-4 pb-24">
-                    <!-- Cards will be injected here via JS -->
-                </div>
-            </div>
-        </div>
-
-        <!-- ========================================================================= -->
-        <!-- TIP DETAIL MODAL (The Detailed View) -->
-        <!-- ========================================================================= -->
-        <div id="tip-detail-modal" class="absolute inset-0 z-50 bg-white flex flex-col transform translate-y-full transition-transform duration-500">
-            <!-- Modal Header -->
-            <div class="relative h-48 bg-cyan-50 overflow-hidden shrink-0">
-                <div class="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
-                <button onclick="window.closeTipDetail()" class="absolute top-4 left-4 z-20 w-10 h-10 bg-white/50 backdrop-blur-md rounded-full flex items-center justify-center text-slate-800 hover:bg-white shadow-sm transition-all">
-                    <span class="material-symbols-rounded">arrow_back</span>
-                </button>
-                <div class="absolute bottom-0 left-0 w-full p-6 bg-gradient-to-t from-white to-transparent pt-20">
-                    <div id="detail-icon-wrapper" class="w-16 h-16 rounded-2xl bg-white shadow-lg flex items-center justify-center mb-3 text-cyan-600 border border-cyan-100">
-                        <span id="detail-icon" class="material-symbols-rounded text-4xl">light_mode</span>
-                    </div>
-                    <h2 id="detail-title" class="text-2xl font-bold text-slate-900 leading-tight">Tip Title Here</h2>
-                </div>
-            </div>
-
-            <!-- Modal Content (Scrollable) -->
-            <div class="flex-1 overflow-y-auto px-6 py-6 hide-scroll bg-white">
-                <div id="detail-content" class="article-content pb-24">
-                    <!-- Rich Text Content Injected Here -->
-                </div>
-            </div>
-
-            <!-- Fixed Bottom Action for Modal -->
-            <div class="p-4 border-t border-slate-100 bg-white absolute bottom-0 w-full">
-                <button onclick="window.closeTipDetail()" class="w-full py-3 bg-slate-900 text-white rounded-xl font-bold shadow-lg">Got it</button>
-            </div>
-        </div>
-
-
-        <!-- ========================================================================= -->
-        <!-- EXISTING MODALS (Instructions & Results) -->
-        <!-- ========================================================================= -->
-        <!-- INSTRUCTION MODAL -->
-        <div id="instruction-modal" class="absolute inset-0 z-50 bg-slate-900/60 backdrop-blur-sm hidden flex items-center justify-center p-6 animate-fade-in">
-            <div class="bg-white rounded-3xl w-full max-w-sm p-6 shadow-2xl border border-white/50">
-                <div class="flex justify-center mb-4">
-                    <div class="w-12 h-12 rounded-full bg-cyan-100 text-cyan-600 flex items-center justify-center">
-                        <span class="material-symbols-rounded text-2xl">info</span>
-                    </div>
-                </div>
-                <h2 class="text-xl font-bold text-center text-slate-800 mb-2">Instructions</h2>
-                <p class="text-center text-slate-500 text-sm mb-6">For accurate blink detection:</p>
-                <ul class="space-y-4 mb-6">
-                    <li class="flex gap-3 items-start">
-                        <span class="material-symbols-rounded text-cyan-500 shrink-0">smartphone</span>
-                        <p class="text-sm text-slate-600"><strong>Eye Level:</strong> Keep phone directly in front of face.</p>
-                    </li>
-                    <li class="flex gap-3 items-start">
-                        <span class="material-symbols-rounded text-cyan-500 shrink-0">light_mode</span>
-                        <p class="text-sm text-slate-600"><strong>Lighting:</strong> Ensure face is well lit (no shadows).</p>
-                    </li>
-                    <li class="flex gap-3 items-start">
-                        <span class="material-symbols-rounded text-cyan-500 shrink-0">visibility</span>
-                        <p class="text-sm text-slate-600"><strong>Steady:</strong> Hold phone steady. Blink naturally.</p>
-                    </li>
-                </ul>
-                <button onclick="window.startActualTest()" class="w-full py-3.5 bg-cyan-600 hover:bg-cyan-700 text-white rounded-xl font-bold shadow-lg transition-all active:scale-95">
-                    Start 1-Min Test
-                </button>
-            </div>
-        </div>
-
-        <!-- RESULT POPUP MODAL -->
-        <div id="result-modal" class="absolute inset-0 z-50 bg-black/50 backdrop-blur-sm hidden flex items-center justify-center p-6">
-            <div class="bg-white rounded-3xl w-full max-w-sm p-6 shadow-2xl animate-pop-in border border-white/50">
-                <div class="flex justify-center mb-4">
-                    <div class="w-16 h-16 rounded-full bg-cyan-50 flex items-center justify-center border-4 border-white shadow-lg">
-                        <span class="material-symbols-rounded text-4xl text-cyan-600">analytics</span>
-                    </div>
-                </div>
-                
-                <h2 class="text-2xl font-bold text-center text-slate-800 mb-1">Analysis Complete</h2>
-                <p class="text-center text-slate-500 text-sm mb-6">1-Minute Session Report</p>
-
-                <div class="grid grid-cols-2 gap-4 mb-6">
-                    <div class="bg-slate-50 p-3 rounded-2xl text-center border border-slate-100">
-                        <p class="text-xs text-slate-400 uppercase font-bold">Blink Rate</p>
-                        <p id="modal-rate" class="text-2xl font-bold text-cyan-700">--</p>
-                        <p class="text-[10px] text-slate-400">per minute</p>
-                    </div>
-                    <div class="bg-slate-50 p-3 rounded-2xl text-center border border-slate-100">
-                        <p class="text-xs text-slate-400 uppercase font-bold">Total Blinks</p>
-                        <p id="modal-total" class="text-2xl font-bold text-slate-700">--</p>
-                        <p class="text-[10px] text-slate-400">count</p>
-                    </div>
-                </div>
-
-                <div class="mb-2">
-                    <p class="text-xs text-slate-400 font-bold uppercase mb-2 ml-1">Result Verdict</p>
-                    <div id="modal-verdict-box" class="rounded-xl p-4 flex items-center gap-3 border-l-4 shadow-sm bg-slate-50">
-                        <span id="modal-icon" class="material-symbols-rounded text-3xl">check_circle</span>
-                        <div>
-                            <p class="text-xs opacity-70 font-bold uppercase">Strain Level</p>
-                            <p id="modal-verdict" class="text-lg font-bold">Calculating...</p>
-                        </div>
-                    </div>
-                </div>
-                
-                <p class="text-xs text-slate-400 text-center mb-4 mt-2 px-2" id="modal-tip">
-                    Tip: Follow the 20-20-20 rule to reduce strain.
-                </p>
-
-                <button onclick="window.closeModal()" class="w-full py-3.5 bg-slate-900 text-white rounded-xl font-semibold shadow-lg active:scale-95 transition-transform">
-                    Done / Restart
-                </button>
-            </div>
-        </div>
-
-        <!-- Bottom Action Bar (Fixed) -->
-        <div class="absolute bottom-0 left-0 w-full p-6 bg-gradient-to-t from-white via-white/95 to-transparent z-30">
-            <div class="flex gap-4">
-                <button onclick="window.initiateScan()" id="scan-btn" class="flex-1 h-14 bg-cyan-500 hover:bg-cyan-600 text-white rounded-xl font-bold text-lg shadow-[0_8px_20px_rgba(6,182,212,0.3)] transition-all active:scale-95 flex items-center justify-center gap-2 group">
-                    <span class="material-symbols-rounded group-hover:animate-pulse" id="btn-icon">play_circle</span>
-                    <span id="btn-text">Start 1-Min Test</span>
-                </button>
-                
-                <!-- TIPS BUTTON (ACTIVATED) -->
-                <button onclick="window.openTips()" class="h-14 w-14 glass-panel bg-white rounded-xl flex items-center justify-center text-cyan-600 border-cyan-200 hover:bg-cyan-50 transition-colors active:scale-95 shadow-sm group">
-                    <span class="material-symbols-rounded text-2xl group-hover:scale-110 transition-transform">tips_and_updates</span>
-                </button>
-            </div>
-        </div>
-
+        <button class="btn-select btn-driver" id="select-driver">
+            <span>👮‍♂️</span> I am the Driver
+        </button>
+        <button class="btn-select btn-student" id="select-student">
+            <span>🎓</span> I am a Student
+        </button>
     </div>
 
-    <!-- MAIN LOGIC -->
+    <!-- SCREEN 2: DRIVER -->
+    <div id="screen-driver" class="full-screen hidden">
+        <button class="back-btn" onclick="location.reload()">&#8592;</button>
+        <div class="status-card">
+            <div id="status-indicator" class="indicator"></div>
+            <h2 id="driver-status">OFFLINE</h2>
+            <p style="color: #bbb; font-size: 0.9rem; margin-top: 5px;">Share location for students</p>
+            
+            <div class="coord-display" id="debug-coords">
+                Waiting for GPS...
+            </div>
+
+            <button id="btn-start" class="btn-action btn-start">START SHARING</button>
+            <button id="btn-stop" class="btn-action btn-stop hidden">STOP SHARING</button>
+        </div>
+    </div>
+
+    <!-- SCREEN 3: STUDENT -->
+    <div id="screen-student" class="full-screen hidden">
+        <button class="back-btn" onclick="location.reload()">&#8592;</button>
+        <div id="map"></div>
+
+        <!-- Bottom Sheet -->
+        <div class="bottom-sheet" id="student-sheet">
+            <div class="sheet-header">
+                <div>
+                    <div class="bus-title">College Bus 01</div>
+                    <div style="font-size: 0.8rem; color: #888;">Route: Campus Main</div>
+                </div>
+                <div class="status-badge" id="live-badge">OFFLINE 🔴</div>
+            </div>
+            <div class="info-grid">
+                <div class="info-box">
+                    <div class="info-value" id="disp-speed">0 km/h</div>
+                    <div class="info-label">Speed</div>
+                </div>
+                <div class="info-box">
+                    <div class="info-value" id="disp-time">--:--</div>
+                    <div class="info-label">Last Update</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+    <!-- FIREBASE MODULE & APP LOGIC -->
     <script type="module">
-        import {
-            FaceLandmarker,
-            FilesetResolver
-        } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.0";
+        // 1. Import Firebase Functions (Modular SDK)
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js";
+        import { getDatabase, ref, set, onValue, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-        // DOM Elements
-        const video = document.getElementById("webcam");
-        const blinkCountEl = document.getElementById("blink-count");
-        const eyeIcon = document.getElementById("eye-icon");
-        const timerDisplay = document.getElementById("timer-display");
-        const progressBar = document.getElementById("progress-bar");
+        // 2. Your Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyB2PG5JvDko2UmQDlY9gN5lBgga2vQy-Ws",
+            authDomain: "conceptra-c1000.firebaseapp.com",
+            databaseURL: "https://conceptra-c1000-default-rtdb.firebaseio.com",
+            projectId: "conceptra-c1000",
+            storageBucket: "conceptra-c1000.firebasestorage.app",
+            messagingSenderId: "298402987968",
+            appId: "1:298402987968:web:c0d0d7d6c08cdfa6bc5225",
+            measurementId: "G-QRQYEVSJJ6"
+        };
+
+        // 3. Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const analytics = getAnalytics(app); // Analytics init
+        const database = getDatabase(app);   // Database init
+        const BUS_ID = "bus1";               // Unique ID for the bus
+
+        // --- DOM ELEMENTS & VARIABLES ---
+        const homeScreen = document.getElementById('screen-home');
+        const driverScreen = document.getElementById('screen-driver');
+        const studentScreen = document.getElementById('screen-student');
         
-        // Modals
-        const instructionModal = document.getElementById("instruction-modal");
-        const resultModal = document.getElementById("result-modal");
-        
-        // Result Content
-        const modalRate = document.getElementById("modal-rate");
-        const modalTotal = document.getElementById("modal-total");
-        const modalVerdict = document.getElementById("modal-verdict");
-        const modalVerdictBox = document.getElementById("modal-verdict-box");
-        const modalIcon = document.getElementById("modal-icon");
-        const modalTip = document.getElementById("modal-tip");
+        let watchId = null; // To store GPS watcher ID
+        let map = null;     // Leaflet Map instance
+        let busMarker = null; // Bus Marker instance
 
-        // UI Loading Elements
-        const loadingDiv = document.getElementById("camera-loading");
-        const loadingText = document.getElementById("loading-text");
-        const errorBox = document.getElementById("error-box");
-        const errorMsg = document.getElementById("error-msg");
-        
-        // Logic Variables
-        let faceLandmarker;
-        let runningMode = "VIDEO";
-        let webcamRunning = false;
-        let lastVideoTime = -1;
-        
-        // Session Variables
-        let isScanning = false;
-        let blinkCounter = 0;
-        let isEyeClosed = false;
-        let timerInterval = null;
-        let remainingTime = 60; 
+        // --- NAVIGATION HANDLERS ---
+        document.getElementById('select-driver').addEventListener('click', () => {
+            homeScreen.classList.add('hidden');
+            driverScreen.classList.remove('hidden');
+        });
 
-        // --- 1. SETUP AI ---
-        async function createFaceLandmarker() {
-            try {
-                const filesetResolver = await FilesetResolver.forVisionTasks(
-                    "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.0/wasm"
-                );
-                
-                faceLandmarker = await FaceLandmarker.createFromOptions(filesetResolver, {
-                    baseOptions: {
-                        modelAssetPath: `https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task`,
-                        delegate: "GPU"
-                    },
-                    outputFaceBlendshapes: true,
-                    runningMode: runningMode,
-                    numFaces: 1
-                });
-                
-                console.log("AI Model Loaded");
-                loadingText.innerText = "Requesting Camera...";
-                startCamera();
+        document.getElementById('select-student').addEventListener('click', () => {
+            homeScreen.classList.add('hidden');
+            studentScreen.classList.remove('hidden');
+            initMap(); // Load map when student enters
+        });
 
-            } catch (error) {
-                showError("Error loading AI. Please refresh.");
-                console.error(error);
-            }
-        }
+        // ===========================================
+        // 👮‍♂️ DRIVER LOGIC (SEND DATA)
+        // ===========================================
+        const btnStart = document.getElementById('btn-start');
+        const btnStop = document.getElementById('btn-stop');
+        const statusText = document.getElementById('driver-status');
+        const indicator = document.getElementById('status-indicator');
+        const debugCoords = document.getElementById('debug-coords');
 
-        // --- 2. CAMERA HANDLING ---
-        function startCamera() {
-            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-                showError("Browser not supported. Use Chrome (HTTPS).");
+        btnStart.addEventListener('click', () => {
+            if (!navigator.geolocation) {
+                alert("Geolocation is not supported by your browser");
                 return;
             }
 
-            const constraints = {
-                video: {
-                    facingMode: "user",
-                    frameRate: { ideal: 60, max: 60 },
-                    width: { ideal: 640 }, 
-                    height: { ideal: 480 }
-                }
-            };
+            // UI Update
+            btnStart.classList.add('hidden');
+            btnStop.classList.remove('hidden');
+            statusText.innerText = "ONLINE & SHARING";
+            indicator.classList.add('active');
 
-            navigator.mediaDevices.getUserMedia(constraints)
-            .then((stream) => {
-                video.srcObject = stream;
-                video.addEventListener("loadeddata", predictWebcam);
-                loadingDiv.classList.add("hidden");
-                webcamRunning = true;
-            })
-            .catch((err) => {
-                if(err.name === 'NotAllowedError') showError("Camera Permission Denied.");
-                else showError("Camera Error. Use HTTPS.");
-            });
-        }
+            // Start GPS Tracking
+            const options = { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 };
+            
+            watchId = navigator.geolocation.watchPosition(
+                (position) => {
+                    const lat = position.coords.latitude;
+                    const lng = position.coords.longitude;
+                    const speed = position.coords.speed ? (position.coords.speed * 3.6).toFixed(1) : 0; // m/s to km/h
+                    const timestamp = new Date().toLocaleTimeString();
 
-        // --- 3. PREDICTION LOOP ---
-        async function predictWebcam() {
-            if (lastVideoTime !== video.currentTime) {
-                lastVideoTime = video.currentTime;
-                // Detect Face
-                let results = faceLandmarker.detectForVideo(video, Date.now());
+                    // Update Driver Screen UI
+                    debugCoords.innerHTML = `Lat: ${lat.toFixed(5)}<br>Lng: ${lng.toFixed(5)}<br>Speed: ${speed} km/h`;
 
-                if (results.faceBlendshapes && results.faceBlendshapes.length > 0) {
-                    detectBlink(results.faceBlendshapes[0].categories);
-                }
+                    // Send to Firebase
+                    set(ref(database, 'buses/' + BUS_ID), {
+                        lat: lat,
+                        lng: lng,
+                        speed: speed,
+                        lastUpdated: timestamp,
+                        active: true
+                    }).catch(err => console.error("Firebase Error:", err));
+                },
+                (error) => {
+                    alert("GPS Error: " + error.message);
+                    stopSharing(); // Stop if error
+                },
+                options
+            );
+        });
+
+        btnStop.addEventListener('click', () => {
+            stopSharing();
+        });
+
+        function stopSharing() {
+            if (watchId) {
+                navigator.geolocation.clearWatch(watchId);
+                watchId = null;
             }
-            if (webcamRunning) window.requestAnimationFrame(predictWebcam);
+            
+            // Set active: false in Firebase
+            set(ref(database, 'buses/' + BUS_ID + '/active'), false);
+
+            // UI Reset
+            btnStart.classList.remove('hidden');
+            btnStop.classList.add('hidden');
+            statusText.innerText = "OFFLINE";
+            indicator.classList.remove('active');
+            debugCoords.innerText = "Tracking Stopped.";
         }
 
-        // --- 4. BLINK DETECTION ---
-        function detectBlink(blendshapes) {
-            const eyeBlinkLeft = blendshapes.find(s => s.categoryName === 'eyeBlinkLeft');
-            const eyeBlinkRight = blendshapes.find(s => s.categoryName === 'eyeBlinkRight');
+        // ===========================================
+        // 🎓 STUDENT LOGIC (RECEIVE DATA)
+        // ===========================================
+        function initMap() {
+            // Initialize Map (Default center India, will move to bus)
+            map = L.map('map').setView([20.5937, 78.9629], 5);
 
-            if (eyeBlinkLeft && eyeBlinkRight) {
-                const avgScore = (eyeBlinkLeft.score + eyeBlinkRight.score) / 2;
-                
-                const CLOSE_THRESHOLD = 0.35; 
-                const OPEN_THRESHOLD = 0.25;  
+            // Add OpenStreetMap Tiles
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; OpenStreetMap',
+                maxZoom: 19
+            }).addTo(map);
 
-                if (avgScore > CLOSE_THRESHOLD) {
-                    eyeIcon.innerText = "visibility_off";
-                    eyeIcon.classList.replace("text-cyan-500", "text-slate-400");
-                    
-                    if (isScanning && !isEyeClosed) {
-                        isEyeClosed = true;
-                        blinkCounter++;
-                        blinkCountEl.innerText = blinkCounter;
-                        
-                        blinkCountEl.classList.remove('scale-100');
-                        blinkCountEl.classList.add('scale-110');
-                        setTimeout(() => blinkCountEl.classList.remove('scale-110'), 100);
+            // Custom Bus Icon
+            const busIcon = L.divIcon({
+                className: 'bus-icon-marker',
+                html: '🚌',
+                iconSize: [40, 40],
+                iconAnchor: [20, 20]
+            });
+
+            // Listen to Firebase Data Changes
+            const busRef = ref(database, 'buses/' + BUS_ID);
+            
+            onValue(busRef, (snapshot) => {
+                const data = snapshot.val();
+                const sheet = document.getElementById('student-sheet');
+                const badge = document.getElementById('live-badge');
+
+                if (data && data.active) {
+                    // Update UI Data
+                    sheet.classList.add('show');
+                    document.getElementById('disp-speed').innerText = Math.round(data.speed) + " km/h";
+                    document.getElementById('disp-time').innerText = data.lastUpdated;
+                    badge.innerText = "LIVE 🟢";
+                    badge.style.background = "#ccffcc";
+                    badge.style.color = "#006600";
+
+                    // Update Map Marker
+                    if (busMarker) {
+                        busMarker.setLatLng([data.lat, data.lng]);
+                    } else {
+                        busMarker = L.marker([data.lat, data.lng], {icon: busIcon}).addTo(map);
                     }
-                } else if (avgScore < OPEN_THRESHOLD) {
-                    eyeIcon.innerText = "visibility";
-                    eyeIcon.classList.replace("text-slate-400", "text-cyan-500");
-                    isEyeClosed = false;
+
+                    // Smooth Pan to Bus
+                    map.flyTo([data.lat, data.lng], 16, { animate: true, duration: 1 });
+
+                } else {
+                    // Bus Offline logic
+                    badge.innerText = "OFFLINE 🔴";
+                    badge.style.background = "#ffebee";
+                    badge.style.color = "#c62828";
+                    document.getElementById('disp-speed').innerText = "--";
                 }
-            }
-        }
-
-        // --- 5. FLOW MANAGEMENT ---
-        
-        window.initiateScan = function() {
-            if(isScanning) {
-                window.stopScan();
-            } else {
-                if(!webcamRunning) {
-                    alert("Please wait for camera to load.");
-                    return;
-                }
-                instructionModal.classList.remove("hidden");
-                instructionModal.classList.add("flex");
-            }
-        };
-
-        window.startActualTest = function() {
-            instructionModal.classList.add("hidden");
-            instructionModal.classList.remove("flex");
-
-            isScanning = true;
-            blinkCounter = 0;
-            blinkCountEl.innerText = "0";
-            remainingTime = 60;
-            
-            const btn = document.getElementById('scan-btn');
-            const btnText = document.getElementById('btn-text');
-            const btnIcon = document.getElementById('btn-icon');
-            const overlay = document.getElementById('scan-overlay');
-            
-            overlay.classList.remove('hidden');
-            btnText.innerText = "Stop Scanning";
-            btn.classList.replace('bg-cyan-500', 'bg-red-500');
-            btn.classList.replace('hover:bg-cyan-600', 'hover:bg-red-600');
-            btnIcon.innerText = "stop_circle";
-            
-            progressBar.style.width = "0%";
-            progressBar.classList.remove("bg-red-500");
-            progressBar.classList.add("bg-cyan-500");
-            timerDisplay.innerText = "01:00";
-
-            timerInterval = setInterval(() => {
-                remainingTime--;
-                updateTimerUI();
-
-                if (remainingTime <= 0) {
-                    window.stopScan(); 
-                }
-            }, 1000);
-        };
-
-        window.stopScan = function() {
-            isScanning = false;
-            clearInterval(timerInterval);
-            
-            const btn = document.getElementById('scan-btn');
-            const btnText = document.getElementById('btn-text');
-            const btnIcon = document.getElementById('btn-icon');
-            const overlay = document.getElementById('scan-overlay');
-            
-            overlay.classList.add('hidden');
-            btnText.innerText = "Start 1-Min Test";
-            btn.classList.replace('bg-red-500', 'bg-cyan-500');
-            btn.classList.replace('hover:bg-red-600', 'hover:bg-cyan-600');
-            btnIcon.innerText = "play_circle";
-
-            showResultModal();
-        };
-
-        function updateTimerUI() {
-            const mins = Math.floor(remainingTime / 60).toString().padStart(2, '0');
-            const secs = (remainingTime % 60).toString().padStart(2, '0');
-            timerDisplay.innerText = `${mins}:${secs}`;
-            
-            const percentage = ((60 - remainingTime) / 60) * 100;
-            progressBar.style.width = `${percentage}%`;
-            
-            if(remainingTime < 10) {
-                progressBar.classList.remove("bg-cyan-500");
-                progressBar.classList.add("bg-red-500");
-                timerDisplay.classList.add("text-red-500");
-            } else {
-                timerDisplay.classList.remove("text-red-500");
-            }
-        }
-
-        // --- 6. REPORT GENERATION ---
-        function showResultModal() {
-            const durationUsed = 60 - remainingTime; 
-            const durationMin = durationUsed / 60;
-            
-            let rate = 0;
-            if (durationUsed < 5) {
-                rate = blinkCounter; 
-            } else {
-                rate = Math.round(blinkCounter / (durationMin || 1));
-            }
-
-            modalTotal.innerText = blinkCounter;
-            modalRate.innerText = rate;
-            
-            modalVerdictBox.className = "rounded-xl p-4 flex items-center gap-3 border-l-4 shadow-sm";
-            
-            if (durationUsed < 10) {
-                modalVerdict.innerText = "Incomplete";
-                modalVerdictBox.classList.add("bg-slate-100", "border-slate-400", "text-slate-700");
-                modalIcon.innerText = "timer_off";
-                modalIcon.className = "material-symbols-rounded text-3xl text-slate-500";
-                modalTip.innerText = "Please test for at least 10 seconds.";
-            } 
-            else if (rate >= 12 && rate <= 28) {
-                modalVerdict.innerText = "Healthy (Normal)";
-                modalVerdictBox.classList.add("bg-green-50", "border-green-500", "text-green-800");
-                modalIcon.innerText = "check_circle";
-                modalIcon.className = "material-symbols-rounded text-3xl text-green-600";
-                modalTip.innerText = "Great! Your blinking pattern indicates low eye strain.";
-            } 
-            else if (rate < 12) {
-                modalVerdict.innerText = "High Strain (Low)";
-                modalVerdictBox.classList.add("bg-red-50", "border-red-500", "text-red-800");
-                modalIcon.innerText = "warning";
-                modalIcon.className = "material-symbols-rounded text-3xl text-red-600";
-                modalTip.innerText = "You are staring too much. Try the 20-20-20 rule.";
-            } 
-            else {
-                modalVerdict.innerText = "Fatigue / Anxiety";
-                modalVerdictBox.classList.add("bg-yellow-50", "border-yellow-500", "text-yellow-800");
-                modalIcon.innerText = "opacity";
-                modalIcon.className = "material-symbols-rounded text-3xl text-yellow-600";
-                modalTip.innerText = "High blink rate may indicate dry eyes or tiredness.";
-            }
-
-            resultModal.classList.remove("hidden");
-            resultModal.classList.add("flex");
-        }
-
-        window.closeModal = function() {
-            resultModal.classList.add("hidden");
-            resultModal.classList.remove("flex");
-            timerDisplay.innerText = "01:00";
-            timerDisplay.classList.remove("text-red-500");
-            progressBar.style.width = "0%";
-            progressBar.classList.remove("bg-red-500");
-            progressBar.classList.add("bg-cyan-500");
-        }
-
-        function showError(msg) {
-            document.getElementById("spinner").classList.add("hidden");
-            loadingText.classList.add("hidden");
-            errorBox.classList.remove("hidden");
-            errorBox.classList.add("flex");
-            errorMsg.innerText = msg;
-        }
-
-        // Initialize
-        createFaceLandmarker();
-    </script>
-
-    <!-- ========================================================== -->
-    <!-- JAVASCRIPT FOR TIPS SYSTEM (HUGE DATA SET) -->
-    <!-- ========================================================== -->
-    <script>
-        // --------- TIP DATA (Extremely Detailed) ---------
-        const tipsData = [
-            {
-                id: 1,
-                title: "The 20-20-20 Rule",
-                icon: "timer_10_alt_1",
-                short: "The golden rule for preventing digital eye strain.",
-                content: `
-                    <p>The 20-20-20 rule is widely considered the gold standard in digital eye strain prevention. It was designed by optometrists to combat Computer Vision Syndrome (CVS) effectively and simply.</p>
-                    
-                    <h3>Why it works scientifically</h3>
-                    <p>When you stare at a screen, your ciliary muscles (the muscles that control focus) remain contracted to hold focus at a near distance. Over time, these muscles fatigue, leading to blurred vision and headaches. Looking at a distance relaxes these muscles completely.</p>
-                    
-                    <h3>How to perform it correctly</h3>
-                    <ul>
-                        <li><strong>Set a Timer:</strong> Every 20 minutes, take a break.</li>
-                        <li><strong>Look Away:</strong> Focus your eyes on an object at least 20 feet away (about 6 meters).</li>
-                        <li><strong>Duration:</strong> Hold that gaze for a full 20 seconds. This is the time required for the eyes to fully relax.</li>
-                    </ul>
-
-                    <h3>Common Mistakes</h3>
-                    <p>Many people only look away for 2-3 seconds. This isn't enough. You must count to 20. Also, looking at a wall 5 feet away doesn't count; it must be distant to relax the lens.</p>
-                `
-            },
-            {
-                id: 2,
-                title: "Conscious Blinking",
-                icon: "visibility",
-                short: "Combat dry eyes by re-learning how to blink.",
-                content: `
-                    <p>Did you know that when you look at a digital screen, your blink rate drops by up to 66%? A normal blink rate is 15-20 times per minute, but on screens, it can drop to 5-7 times.</p>
-                    
-                    <h3>The Biology of Blinking</h3>
-                    <p>Blinking serves two critical functions: it spreads the tear film across the cornea to keep it moist and optically clear, and it squeezes the Meibomian glands to release oils that prevent tears from evaporating. Without this, you get "Dry Eye Syndrome."</p>
-                    
-                    <h3>The 'Perfect Blink' Exercise</h3>
-                    <ul>
-                        <li>Close your eyes gently.</li>
-                        <li>Pause for 2 seconds.</li>
-                        <li>Squeeze your eyelids tight for 2 seconds (this pumps the oil glands).</li>
-                        <li>Open your eyes.</li>
-                        <li>Repeat this 5 times every hour.</li>
-                    </ul>
-                    
-                    <p><strong>Pro Tip:</strong> Place a sticky note on your monitor that says "BLINK" to build the habit.</p>
-                `
-            },
-            {
-                id: 3,
-                title: "Proper Screen Ergonomics",
-                icon: "desktop_windows",
-                short: "Adjust your physical setup to save your eyes.",
-                content: `
-                    <p>Eye strain isn't just about the eyes; it's about geometry. The angle at which you view your screen determines how much your eyelids are open and how much strain is placed on your neck.</p>
-                    
-                    <h3>The Ideal Setup</h3>
-                    <ul>
-                        <li><strong>Distance:</strong> The screen should be an arm's length away (approx. 25 inches). If you can high-five your screen, it's too close.</li>
-                        <li><strong>Height:</strong> The top of the screen should be at or slightly below eye level. This forces you to look slightly down (15-20 degrees).</li>
-                        <li><strong>Why Downward?</strong> Looking down covers more of the eye surface with the eyelid, reducing evaporation of tears. Looking up exposes the entire cornea, causing dryness faster.</li>
-                    </ul>
-                `
-            },
-            {
-                id: 4,
-                title: "Adjusting Screen Brightness",
-                icon: "brightness_6",
-                short: "Match your screen to your environment.",
-                content: `
-                    <p>Your screen should not be a glowing beacon in a dark room, nor should it be dim in a bright room. The contrast between your screen and the surrounding environment causes "glare strain."</p>
-                    
-                    <h3>The 'White Paper' Test</h3>
-                    <p>Open a blank white page on your device. Hold a piece of white paper next to the screen.</p>
-                    <ul>
-                        <li>If the screen looks like a light source (much brighter than the paper), it's too bright.</li>
-                        <li>If the screen looks dull and grey compared to the paper, it's too dark.</li>
-                        <li>The goal is for the screen to match the brightness of the paper in the room's current lighting.</li>
-                    </ul>
-                    
-                    <p><strong>Night Usage:</strong> Always use "Night Shift" or "Blue Light Filter" modes after sunset to reduce blue spectrum light, which affects sleep hormones.</p>
-                `
-            },
-            {
-                id: 5,
-                title: "The Importance of Hydration",
-                icon: "water_drop",
-                short: "Water is the fuel for your tear production.",
-                content: `
-                    <p>Your eyes are primarily composed of water and require systemic hydration to produce tears. Dehydration is a leading, often overlooked, cause of chronic eye strain and dryness.</p>
-                    
-                    <h3>How it affects vision</h3>
-                    <p>When the body is dehydrated, it conserves water by reducing tear production. This leads to a gritty sensation, redness, and fluctuating vision quality.</p>
-                    
-                    <h3>Action Plan</h3>
-                    <ul>
-                        <li>Drink at least 8 glasses (2 liters) of water daily.</li>
-                        <li>Limit caffeine and alcohol, as they are diuretics and dehydrate the body further.</li>
-                        <li>If you feel thirsty, you are already dehydrated. Keep a water bottle at your desk.</li>
-                    </ul>
-                `
-            },
-            {
-                id: 6,
-                title: "Palming Technique",
-                icon: "front_hand",
-                short: "A yoga technique for deep eye relaxation.",
-                content: `
-                    <p>Palming was developed by ophthalmologist William Bates. It uses warmth and total darkness to reset the optic nerve and relax the eye muscles.</p>
-                    
-                    <h3>Step-by-Step Guide</h3>
-                    <ul>
-                        <li>Sit comfortably at a desk, elbows resting on the table.</li>
-                        <li>Rub your hands together vigorously until they feel warm.</li>
-                        <li>Cup your hands over your closed eyes. The heel of your hand should rest on your cheekbone, fingers on your forehead.</li>
-                        <li><strong>Crucial:</strong> Do not put pressure on the eyeballs themselves.</li>
-                        <li>Ensure no light enters. visualize total blackness.</li>
-                        <li>Breathe deeply for 2-3 minutes.</li>
-                    </ul>
-                    <p>The warmth relaxes the muscles, and the darkness allows the rhodopsin (visual purple) in your retina to regenerate.</p>
-                `
-            },
-            {
-                id: 7,
-                title: "Managing Air Quality",
-                icon: "air",
-                short: "Fans and ACs are enemies of moist eyes.",
-                content: `
-                    <p>Environmental factors play a massive role in eye comfort. Moving air accelerates tear evaporation, turning a comfortable session into a painful one quickly.</p>
-                    
-                    <h3>What to avoid</h3>
-                    <ul>
-                        <li><strong>Ceiling Fans:</strong> Do not sit directly under a fan spinning at high speed.</li>
-                        <li><strong>Car AC:</strong> Never point the AC vents directly at your face while driving.</li>
-                        <li><strong>Humidity:</strong> Air conditioners strip moisture from the air. If you work in an AC office, consider using a desktop humidifier to keep the relative humidity around 45%.</li>
-                    </ul>
-                `
-            },
-            {
-                id: 8,
-                title: "Blue Light Management",
-                icon: "lightbulb_circle",
-                short: "Understanding the high-energy visible (HEV) light.",
-                content: `
-                    <p>Blue light has the shortest wavelength and highest energy. It scatters more easily than other visible light, creating "visual noise" that reduces contrast and forces eyes to work harder.</p>
-                    
-                    <h3>Is it dangerous?</h3>
-                    <p>While permanent damage is debated, blue light definitely contributes to digital eye strain and disrupts circadian rhythms (sleep cycles).</p>
-                    
-                    <h3>Protection Strategies</h3>
-                    <ul>
-                        <li><strong>Digital Filters:</strong> Enable "Night Light" (Windows) or "Night Shift" (Mac/iOS) permanently, not just at night. Set it to a mild warm setting.</li>
-                        <li><strong>Glasses:</strong> Consider computer glasses with a yellow tint if you work late.</li>
-                        <li><strong>The 2-Hour Rule:</strong> Avoid all screens 2 hours before bed to ensure quality REM sleep.</li>
-                    </ul>
-                `
-            },
-            {
-                id: 9,
-                title: "Font Size & Contrast",
-                icon: "format_size",
-                short: "Stop squinting. Make your text readable.",
-                content: `
-                    <p>Small font sizes force you to lean in (bad posture) and squint (eye muscle strain). "Computer Vision Syndrome" is often just "Small Font Syndrome."</p>
-                    
-                    <h3>The 3x Rule</h3>
-                    <p>Text size should be three times the smallest size you can read from your normal viewing position. If you have to lean in, it's too small.</p>
-                    
-                    <h3>Contrast Settings</h3>
-                    <ul>
-                        <li>Black text on a white background is the best for readability.</li>
-                        <li>Avoid low contrast schemes (like grey text on a black background) for long reading sessions.</li>
-                        <li>Zoom in your browser (Ctrl +) rather than straining.</li>
-                    </ul>
-                `
-            },
-            {
-                id: 10,
-                title: "Diet for Eye Health",
-                icon: "nutrition",
-                short: "Feed your eyes with Lutein and Omega-3.",
-                content: `
-                    <p>Your eyes have high nutritional needs. Specifically, the macula (part of the retina) requires specific pigments to protect against light damage.</p>
-                    
-                    <h3>Superfoods for Eyes</h3>
-                    <ul>
-                        <li><strong>Green Leafy Vegetables:</strong> Spinach and Kale are rich in Lutein and Zeaxanthin, which act as natural sunblock for the retina.</li>
-                        <li><strong>Omega-3 Fatty Acids:</strong> Found in salmon, flaxseeds, and walnuts. These improve the quality of the oil in your tear film, preventing dry eyes.</li>
-                        <li><strong>Vitamin C & E:</strong> Citrus fruits and nuts help prevent age-related degeneration.</li>
-                        <li><strong>Carrots?</strong> Yes, Vitamin A is crucial, but greens are actually more important for screen strain.</li>
-                    </ul>
-                `
-            },
-            {
-                id: 11,
-                title: "Near-Far Focus Drill",
-                icon: "center_focus_strong",
-                short: "Push-ups for your eye muscles.",
-                content: `
-                    <p>Just like your biceps need exercise, your focusing muscles need dynamic movement to stay flexible. Staring at a fixed distance causes 'accommodation spasm'.</p>
-                    
-                    <h3>The Drill</h3>
-                    <ul>
-                        <li>Hold your thumb about 10 inches from your face.</li>
-                        <li>Focus on it clearly for 5 seconds.</li>
-                        <li>Look at something 10-20 feet away. Focus clearly for 5 seconds.</li>
-                        <li>Look back at your thumb.</li>
-                        <li>Repeat this cycle 10 times.</li>
-                    </ul>
-                    <p>This exercises the ciliary muscles, improving their flexibility and reducing the "locked" feeling after long work sessions.</p>
-                `
-            },
-            {
-                id: 12,
-                title: "Glance breaks",
-                icon: "pause_circle",
-                short: "Micro-breaks prevent macro-problems.",
-                content: `
-                    <p>You don't always need a 5-minute break. Micro-breaks are incredibly effective at resetting the blinking pattern.</p>
-                    
-                    <h3>Implementation</h3>
-                    <p>Every time you hit 'Send' on an email, or compile code, or wait for a webpage to load:</p>
-                    <ul>
-                        <li>Close your eyes.</li>
-                        <li>Take one deep breath.</li>
-                        <li>Look at the ceiling.</li>
-                    </ul>
-                    <p>These 5-second interruptions break the "stare trance" that leads to severe strain.</p>
-                `
-            }
-        ];
-
-        // Generator to make list feel "80+" effectively
-        // We will duplicate some logic to create specific variations for the UI list
-        function generateExtendedTips() {
-            const extended = [...tipsData];
-            // Adding specific situational tips based on core principles
-            const extras = [
-                { t: "Contact Lens Care", i: "contacts", d: "Wear glasses when using computers for long periods. Contacts dry out faster on screens." },
-                { t: "Morning Warm-up", i: "wb_twilight", d: "Apply a warm compress to eyes for 5 mins after waking up to unclog oil glands." },
-                { t: "Screen Glare", i: "block", d: "If you see your reflection in the screen, you have glare. Close blinds or get a matte screen protector." },
-                { t: "Blink Rate Check", i: "speed", d: "Use this app daily to check your blink rate. Awareness is the first step to cure." },
-                { t: "Smartphone Distance", i: "smartphone", d: "Hold phones lower than eye level but keep your neck straight. Avoid 'Text Neck'." },
-                { t: "Yearly Exam", i: "medical_services", d: "Digital strain can mask real vision problems. See an optometrist once a year." },
-                { t: "Artificial Tears", i: "medication_liquid", d: "Use preservative-free lubricating drops. Avoid 'red-eye reducer' drops as they cause rebound redness." },
-                { t: "Gaming specific", i: "sports_esports", d: "Gamers blink even less than office workers. Pause between matches intentionally." },
-                { t: "Child Safety", i: "child_care", d: "Children don't feel strain like adults. Enforce breaks for them strictly." },
-                { t: "Workspace Color", i: "palette", d: "Paint walls a soft, matte color. Bright white walls reflect too much light into your eyes." }
-            ];
-
-            extras.forEach((ex, index) => {
-                extended.push({
-                    id: 100 + index,
-                    title: ex.t,
-                    icon: ex.i,
-                    short: ex.d,
-                    content: `<p>${ex.d}</p><h3>Quick Advice</h3><p>This is a specific situational tip. Implement this alongside the core strategies like the 20-20-20 rule for maximum protection.</p>`
-                });
             });
-            return extended;
         }
-
-        const fullTipsList = generateExtendedTips();
-
-        // --------- UI LOGIC ---------
-
-        const tipsPage = document.getElementById("tips-page");
-        const tipsContainer = document.getElementById("tips-container");
-        const tipDetailModal = document.getElementById("tip-detail-modal");
-        
-        // Detail Elements
-        const detailTitle = document.getElementById("detail-title");
-        const detailIcon = document.getElementById("detail-icon");
-        const detailContent = document.getElementById("detail-content");
-
-        // Open Main Tips Page
-        window.openTips = function() {
-            renderTips();
-            tipsPage.classList.remove("translate-y-full");
-            tipsPage.classList.add("translate-y-0");
-        };
-
-        // Close Main Tips Page
-        window.closeTips = function() {
-            tipsPage.classList.remove("translate-y-0");
-            tipsPage.classList.add("translate-y-full");
-        };
-
-        // Render List
-        function renderTips() {
-            if(tipsContainer.children.length > 0) return; // Render once
-
-            fullTipsList.forEach(tip => {
-                const card = document.createElement("div");
-                card.className = "bg-white p-4 rounded-xl shadow-sm border border-slate-100 flex items-center gap-4 active:scale-95 transition-transform cursor-pointer";
-                card.onclick = () => openTipDetail(tip.id);
-                
-                card.innerHTML = `
-                    <div class="w-12 h-12 rounded-full bg-cyan-50 text-cyan-600 flex items-center justify-center shrink-0">
-                        <span class="material-symbols-rounded text-2xl">${tip.icon}</span>
-                    </div>
-                    <div>
-                        <h4 class="font-bold text-slate-800 text-sm">${tip.title}</h4>
-                        <p class="text-xs text-slate-500 line-clamp-2 mt-0.5">${tip.short}</p>
-                    </div>
-                    <span class="material-symbols-rounded text-slate-300 ml-auto">chevron_right</span>
-                `;
-                tipsContainer.appendChild(card);
-            });
-            
-            // Add a "More Coming Soon" at bottom
-            const footer = document.createElement("div");
-            footer.className = "text-center py-6 opacity-50 text-xs font-mono";
-            footer.innerText = "--- END OF LIST ---";
-            tipsContainer.appendChild(footer);
-        }
-
-        // Open Specific Detail
-        function openTipDetail(id) {
-            const tip = fullTipsList.find(t => t.id === id);
-            if(!tip) return;
-
-            detailTitle.innerText = tip.title;
-            detailIcon.innerText = tip.icon;
-            detailContent.innerHTML = tip.content;
-            
-            // Randomize Header Icon Color for fun
-            const colors = ["text-cyan-600", "text-blue-600", "text-purple-600", "text-emerald-600"];
-            const randomColor = colors[Math.floor(Math.random() * colors.length)];
-            document.getElementById("detail-icon-wrapper").className = `w-16 h-16 rounded-2xl bg-white shadow-lg flex items-center justify-center mb-3 border border-cyan-100 ${randomColor}`;
-
-            tipDetailModal.classList.remove("translate-y-full");
-            tipDetailModal.classList.add("translate-y-0");
-        }
-
-        // Close Detail
-        window.closeTipDetail = function() {
-            tipDetailModal.classList.remove("translate-y-0");
-            tipDetailModal.classList.add("translate-y-full");
-        }
-
     </script>
 </body>
 </html>

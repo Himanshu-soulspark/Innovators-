@@ -189,9 +189,15 @@
             btnStop.classList.remove('hidden');
             statusText.innerText = "ONLINE & SHARING";
             indicator.classList.add('active');
+            debugCoords.innerText = "Initializing GPS...";
 
             // Start GPS Tracking
-            const options = { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 };
+            // FIX APPLIED HERE: Increased timeout and age for indoor testing
+            const options = { 
+                enableHighAccuracy: true, 
+                timeout: 60000,    // Increased to 60 seconds to avoid Timeout Error
+                maximumAge: 10000  // Accept 10-second old cached location
+            };
             
             watchId = navigator.geolocation.watchPosition(
                 (position) => {
@@ -213,8 +219,15 @@
                     }).catch(err => console.error("Firebase Error:", err));
                 },
                 (error) => {
-                    alert("GPS Error: " + error.message);
-                    stopSharing(); // Stop if error
+                    // Detailed Error Handling
+                    console.error("GPS Error:", error);
+                    if(error.code === 3) {
+                        // Timeout error - silent retry or inform user
+                         debugCoords.innerText = "Weak Signal. Retrying...";
+                    } else {
+                        alert("GPS Error: " + error.message);
+                        stopSharing(); // Stop if critical error
+                    }
                 },
                 options
             );

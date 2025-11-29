@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>College Bus Tracker (Live)</title>
+    <title>Pro College Bus Tracker (Live)</title>
 
     <!-- Leaflet CSS (Map Styles) -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
 
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
 
     <style>
         /* --- CSS STYLES --- */
@@ -18,46 +18,69 @@
 
         /* Utility Classes */
         .hidden { display: none !important; }
-        .full-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; background: #fff; z-index: 10; }
+        .full-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; background: #fff; z-index: 10; transition: all 0.3s ease; }
         
-        /* Home Screen */
-        #screen-home { justify-content: center; align-items: center; background: linear-gradient(135deg, #0f2027, #203a43, #2c5364); color: white; padding: 20px; text-align: center; }
-        .logo-text { font-size: 2.5rem; margin-bottom: 10px; }
-        .sub-text { opacity: 0.8; margin-bottom: 40px; }
-        .btn-select { width: 100%; max-width: 300px; padding: 18px; margin: 10px 0; border: none; border-radius: 12px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        /* 1. Home Screen */
+        #screen-home { justify-content: center; align-items: center; background: linear-gradient(135deg, #000428, #004e92); color: white; padding: 20px; text-align: center; }
+        .logo-text { font-size: 3.5rem; margin-bottom: 10px; animation: bounce 2s infinite; }
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+        .app-title { font-size: 2rem; font-weight: 700; margin-bottom: 5px; }
+        .sub-text { opacity: 0.8; margin-bottom: 50px; font-weight: 300; }
+        .btn-select { width: 100%; max-width: 320px; padding: 18px; margin: 12px 0; border: none; border-radius: 15px; font-size: 1.1rem; font-weight: 600; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; display: flex; align-items: center; justify-content: center; gap: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
+        .btn-select:active { transform: scale(0.98); }
         .btn-driver { background: #ffcc00; color: #000; }
-        .btn-student { background: #ffffff; color: #333; }
+        .btn-student { background: #ffffff; color: #004e92; }
 
-        /* Driver Screen */
-        #screen-driver { background: #1a1a1a; color: white; padding: 20px; align-items: center; justify-content: center; }
-        .status-card { background: #2d2d2d; padding: 30px; border-radius: 20px; width: 100%; max-width: 350px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        .indicator { width: 15px; height: 15px; background: #555; border-radius: 50%; margin: 0 auto 15px; transition: 0.3s; }
-        .indicator.active { background: #00ff00; box-shadow: 0 0 15px #00ff00; animation: pulse 1.5s infinite; }
-        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
-        .coord-display { font-family: monospace; font-size: 0.8rem; color: #888; margin-top: 15px; background: #000; padding: 10px; border-radius: 8px; }
-        .btn-action { width: 100%; padding: 15px; border-radius: 10px; border: none; font-weight: bold; margin-top: 20px; cursor: pointer; font-size: 1rem; }
-        .btn-start { background: #00e676; color: #000; }
-        .btn-stop { background: #ff3d00; color: #fff; }
+        /* 2. Bus Selection Screen */
+        #screen-selection { background: #f4f7f6; padding: 20px; display: flex; flex-direction: column; }
+        .selection-header { margin-top: 50px; margin-bottom: 20px; text-align: center; }
+        .selection-header h2 { color: #333; font-weight: 700; }
+        .bus-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; overflow-y: auto; padding-bottom: 20px; }
+        .bus-card { background: white; padding: 15px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); text-align: center; cursor: pointer; border: 2px solid transparent; transition: 0.2s; }
+        .bus-card:hover { border-color: #004e92; transform: translateY(-2px); }
+        .bus-card h3 { font-size: 1rem; color: #333; margin: 10px 0 5px; }
+        .bus-card p { font-size: 0.8rem; color: #777; }
+        .bus-icon-lg { font-size: 2rem; }
 
-        /* Student Screen (Map) */
+        /* 3. Driver Screen */
+        #screen-driver { background: #111; color: white; padding: 20px; align-items: center; justify-content: center; }
+        .driver-header { position: absolute; top: 70px; text-align: center; width: 100%; }
+        .selected-bus-name { color: #ffcc00; font-size: 1.5rem; font-weight: 700; }
+        .status-card { background: #222; padding: 40px 30px; border-radius: 25px; width: 100%; max-width: 380px; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.7); border: 1px solid #333; }
+        .indicator { width: 20px; height: 20px; background: #555; border-radius: 50%; margin: 0 auto 20px; transition: 0.3s; }
+        .indicator.active { background: #00ff00; box-shadow: 0 0 25px #00ff00; animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.5); opacity: 0.5; } 100% { transform: scale(1); opacity: 1; } }
+        .coord-display { font-family: 'Courier New', monospace; font-size: 0.85rem; color: #00e676; margin-top: 20px; background: #000; padding: 15px; border-radius: 10px; border: 1px solid #333; text-align: left; }
+        .btn-action { width: 100%; padding: 18px; border-radius: 12px; border: none; font-weight: 700; margin-top: 25px; cursor: pointer; font-size: 1.1rem; text-transform: uppercase; letter-spacing: 1px; transition: 0.2s; }
+        .btn-start { background: linear-gradient(45deg, #00b09b, #96c93d); color: white; box-shadow: 0 5px 20px rgba(0, 176, 155, 0.4); }
+        .btn-stop { background: linear-gradient(45deg, #ff416c, #ff4b2b); color: white; box-shadow: 0 5px 20px rgba(255, 65, 108, 0.4); }
+
+        /* 4. Student Screen (Map) */
         #map { height: 100%; width: 100%; z-index: 1; }
         
-        /* Bottom Sheet (Rapido Style) */
-        .bottom-sheet { position: absolute; bottom: 0; left: 0; width: 100%; background: white; border-top-left-radius: 25px; border-top-right-radius: 25px; padding: 25px; box-shadow: 0 -5px 30px rgba(0,0,0,0.15); z-index: 999; transform: translateY(100%); transition: transform 0.3s ease-out; }
+        /* Distance Badge on Map */
+        .distance-badge { position: absolute; top: 80px; right: 20px; background: white; padding: 10px 15px; border-radius: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); z-index: 1000; display: flex; align-items: center; gap: 8px; font-weight: 600; color: #333; }
+        .dist-icon { color: #004e92; }
+
+        /* Bottom Sheet */
+        .bottom-sheet { position: absolute; bottom: 0; left: 0; width: 100%; background: white; border-top-left-radius: 30px; border-top-right-radius: 30px; padding: 30px 25px; box-shadow: 0 -10px 40px rgba(0,0,0,0.2); z-index: 999; transform: translateY(110%); transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         .bottom-sheet.show { transform: translateY(0); }
-        .sheet-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .bus-title { font-size: 1.2rem; font-weight: 700; color: #333; }
-        .status-badge { background: #e0f2f1; color: #00695c; padding: 5px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; }
+        .sheet-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 25px; }
+        .bus-title { font-size: 1.4rem; font-weight: 800; color: #222; }
+        .bus-route-name { font-size: 0.9rem; color: #666; font-weight: 500; }
+        .status-badge { padding: 6px 15px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
         .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-        .info-box { background: #f5f5f5; padding: 15px; border-radius: 12px; text-align: center; }
-        .info-value { font-size: 1.1rem; font-weight: 700; color: #333; }
-        .info-label { font-size: 0.8rem; color: #777; margin-top: 5px; }
+        .info-box { background: #f8f9fa; padding: 15px; border-radius: 15px; text-align: center; border: 1px solid #eee; }
+        .info-value { font-size: 1.2rem; font-weight: 700; color: #333; }
+        .info-label { font-size: 0.75rem; color: #888; margin-top: 5px; text-transform: uppercase; }
 
         /* Back Button */
-        .back-btn { position: absolute; top: 20px; left: 20px; z-index: 1000; background: white; width: 40px; height: 40px; border-radius: 50%; border: none; font-size: 1.2rem; box-shadow: 0 4px 10px rgba(0,0,0,0.2); cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .back-btn { position: absolute; top: 20px; left: 20px; z-index: 1000; background: white; width: 45px; height: 45px; border-radius: 50%; border: none; font-size: 1.2rem; box-shadow: 0 4px 15px rgba(0,0,0,0.15); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; color: #333; }
+        .back-btn:hover { background: #eee; }
 
-        /* Map Marker Icon */
-        .bus-icon-marker { font-size: 35px; text-align: center; line-height: 1; filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.3)); }
+        /* Map Markers */
+        .bus-icon-marker { font-size: 40px; text-align: center; line-height: 1; filter: drop-shadow(3px 5px 2px rgba(0,0,0,0.3)); }
+        .user-icon-marker { width: 20px; height: 20px; background: #2196f3; border: 3px solid white; border-radius: 50%; box-shadow: 0 0 0 10px rgba(33, 150, 243, 0.2); }
     </style>
 </head>
 <body>
@@ -65,27 +88,45 @@
     <!-- SCREEN 1: HOME -->
     <div id="screen-home" class="full-screen">
         <div class="logo-text">🚌</div>
-        <h2>College Bus Tracker</h2>
-        <p class="sub-text">Live Location System</p>
+        <div class="app-title">College Bus Tracker</div>
+        <p class="sub-text">Premium Live Location System</p>
         
-        <button class="btn-select btn-driver" id="select-driver">
+        <button class="btn-select btn-driver" id="select-driver-mode">
             <span>👮‍♂️</span> I am the Driver
         </button>
-        <button class="btn-select btn-student" id="select-student">
+        <button class="btn-select btn-student" id="select-student-mode">
             <span>🎓</span> I am a Student
         </button>
     </div>
 
-    <!-- SCREEN 2: DRIVER -->
+    <!-- SCREEN 2: BUS SELECTION -->
+    <div id="screen-selection" class="full-screen hidden">
+        <button class="back-btn" onclick="goHome()">&#8592;</button>
+        <div class="selection-header">
+            <h2>Select Your Bus</h2>
+            <p style="color: #777;">Choose the bus to track or drive</p>
+        </div>
+        <div class="bus-grid" id="bus-grid-container">
+            <!-- Grid generated by JS -->
+        </div>
+    </div>
+
+    <!-- SCREEN 3: DRIVER DASHBOARD -->
     <div id="screen-driver" class="full-screen hidden">
-        <button class="back-btn" onclick="location.reload()">&#8592;</button>
+        <button class="back-btn" onclick="goSelection()">&#8592;</button>
+        
+        <div class="driver-header">
+            <p style="color: #888; font-size: 0.9rem;">You are driving</p>
+            <div id="driver-bus-name" class="selected-bus-name">BUS NAME</div>
+        </div>
+
         <div class="status-card">
             <div id="status-indicator" class="indicator"></div>
             <h2 id="driver-status">OFFLINE</h2>
-            <p style="color: #bbb; font-size: 0.9rem; margin-top: 5px;">Share location for students</p>
+            <p style="color: #888; font-size: 0.9rem; margin-top: 5px;">GPS Tracking System</p>
             
             <div class="coord-display" id="debug-coords">
-                Waiting for GPS...
+                Waiting for GPS initialization...
             </div>
 
             <button id="btn-start" class="btn-action btn-start">START SHARING</button>
@@ -93,24 +134,31 @@
         </div>
     </div>
 
-    <!-- SCREEN 3: STUDENT -->
+    <!-- SCREEN 4: STUDENT MAP -->
     <div id="screen-student" class="full-screen hidden">
-        <button class="back-btn" onclick="location.reload()">&#8592;</button>
+        <button class="back-btn" onclick="goSelection()">&#8592;</button>
+        
+        <!-- Distance Float -->
+        <div class="distance-badge hidden" id="distance-badge">
+            <span class="dist-icon">📏</span>
+            <span id="dist-val">0 km</span> away
+        </div>
+
         <div id="map"></div>
 
         <!-- Bottom Sheet -->
         <div class="bottom-sheet" id="student-sheet">
             <div class="sheet-header">
                 <div>
-                    <div class="bus-title">College Bus 01</div>
-                    <div style="font-size: 0.8rem; color: #888;">Route: Campus Main</div>
+                    <div class="bus-title" id="sheet-bus-name">Bus Name</div>
+                    <div class="bus-route-name" id="sheet-bus-route">Route Info</div>
                 </div>
                 <div class="status-badge" id="live-badge">OFFLINE 🔴</div>
             </div>
             <div class="info-grid">
                 <div class="info-box">
                     <div class="info-value" id="disp-speed">0 km/h</div>
-                    <div class="info-label">Speed</div>
+                    <div class="info-label">Current Speed</div>
                 </div>
                 <div class="info-box">
                     <div class="info-value" id="disp-time">--:--</div>
@@ -125,12 +173,11 @@
 
     <!-- FIREBASE MODULE & APP LOGIC -->
     <script type="module">
-        // 1. Import Firebase Functions (Modular SDK)
+        // 1. Import Firebase
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js";
         import { getDatabase, ref, set, onValue, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-        // 2. Your Configuration
+        // 2. Configuration
         const firebaseConfig = {
             apiKey: "AIzaSyB2PG5JvDko2UmQDlY9gN5lBgga2vQy-Ws",
             authDomain: "conceptra-c1000.firebaseapp.com",
@@ -142,174 +189,288 @@
             measurementId: "G-QRQYEVSJJ6"
         };
 
-        // 3. Initialize Firebase
         const app = initializeApp(firebaseConfig);
-        const analytics = getAnalytics(app); // Analytics init
-        const database = getDatabase(app);   // Database init
-        const BUS_ID = "bus1";               // Unique ID for the bus
+        const database = getDatabase(app);
 
-        // --- DOM ELEMENTS & VARIABLES ---
-        const homeScreen = document.getElementById('screen-home');
-        const driverScreen = document.getElementById('screen-driver');
-        const studentScreen = document.getElementById('screen-student');
-        
-        let watchId = null; // To store GPS watcher ID
-        let map = null;     // Leaflet Map instance
-        let busMarker = null; // Bus Marker instance
+        // --- BUS DATA (POWERFUL NAMES) ---
+        const BUS_DATA = [
+            { id: 'bus1', name: '⚡ THUNDERBOLT', route: 'North Campus Route' },
+            { id: 'bus2', name: '🦅 FALCON', route: 'South City Express' },
+            { id: 'bus3', name: '🛡️ GUARDIAN', route: 'West End Shuttle' },
+            { id: 'bus4', name: '🚀 VOYAGER', route: 'Central Station Line' },
+            { id: 'bus5', name: '🌪️ TORNADO', route: 'Highway Express' },
+            { id: 'bus6', name: '🦁 TITAN', route: 'Old City Connect' },
+            { id: 'bus7', name: '💎 DIAMOND', route: 'Girls Hostel Special' }
+        ];
 
-        // --- NAVIGATION HANDLERS ---
-        document.getElementById('select-driver').addEventListener('click', () => {
-            homeScreen.classList.add('hidden');
-            driverScreen.classList.remove('hidden');
+        // --- STATE MANAGEMENT ---
+        let currentMode = null; // 'driver' or 'student'
+        let selectedBus = null; // Stores the selected bus object
+        let watchId = null;     // Driver GPS ID
+        let userWatchId = null; // Student GPS ID
+        let map = null;         // Leaflet Map
+        let busMarker = null;   // Bus Marker
+        let userMarker = null;  // Student Marker
+        let routeLine = null;   // Line between student and bus
+
+        // --- DOM ELEMENTS ---
+        const screens = {
+            home: document.getElementById('screen-home'),
+            select: document.getElementById('screen-selection'),
+            driver: document.getElementById('screen-driver'),
+            student: document.getElementById('screen-student')
+        };
+
+        // --- NAVIGATION LOGIC ---
+        document.getElementById('select-driver-mode').addEventListener('click', () => {
+            currentMode = 'driver';
+            showScreen('select');
+            renderBusGrid();
         });
 
-        document.getElementById('select-student').addEventListener('click', () => {
-            homeScreen.classList.add('hidden');
-            studentScreen.classList.remove('hidden');
-            initMap(); // Load map when student enters
+        document.getElementById('select-student-mode').addEventListener('click', () => {
+            currentMode = 'student';
+            showScreen('select');
+            renderBusGrid();
         });
+
+        // Global functions for HTML onclicks
+        window.goHome = function() {
+            showScreen('home');
+            stopDriverSharing(); // Safety stop
+        };
+
+        window.goSelection = function() {
+            showScreen('select');
+            stopDriverSharing();
+            stopStudentTracking();
+        };
+
+        function showScreen(screenName) {
+            Object.values(screens).forEach(s => s.classList.add('hidden'));
+            screens[screenName].classList.remove('hidden');
+        }
+
+        // --- RENDER BUS GRID ---
+        function renderBusGrid() {
+            const container = document.getElementById('bus-grid-container');
+            container.innerHTML = '';
+            
+            BUS_DATA.forEach(bus => {
+                const card = document.createElement('div');
+                card.className = 'bus-card';
+                card.innerHTML = `
+                    <div class="bus-icon-lg">🚌</div>
+                    <h3>${bus.name}</h3>
+                    <p>${bus.route}</p>
+                `;
+                card.onclick = () => selectBus(bus);
+                container.appendChild(card);
+            });
+        }
+
+        function selectBus(bus) {
+            selectedBus = bus;
+            if (currentMode === 'driver') {
+                initDriverScreen();
+            } else {
+                initStudentScreen();
+            }
+        }
 
         // ===========================================
-        // 👮‍♂️ DRIVER LOGIC (SEND DATA)
+        // 👮‍♂️ DRIVER LOGIC
         // ===========================================
         const btnStart = document.getElementById('btn-start');
         const btnStop = document.getElementById('btn-stop');
         const statusText = document.getElementById('driver-status');
         const indicator = document.getElementById('status-indicator');
         const debugCoords = document.getElementById('debug-coords');
+        const driverBusName = document.getElementById('driver-bus-name');
 
-        btnStart.addEventListener('click', () => {
-            if (!navigator.geolocation) {
-                alert("Geolocation is not supported by your browser");
-                return;
-            }
-
-            // UI Update
-            btnStart.classList.add('hidden');
-            btnStop.classList.remove('hidden');
-            statusText.innerText = "ONLINE & SHARING";
-            indicator.classList.add('active');
-            debugCoords.innerText = "Initializing GPS...";
-
-            // Start GPS Tracking
-            // FIX APPLIED HERE: Increased timeout and age for indoor testing
-            const options = { 
-                enableHighAccuracy: true, 
-                timeout: 60000,    // Increased to 60 seconds to avoid Timeout Error
-                maximumAge: 10000  // Accept 10-second old cached location
-            };
-            
-            watchId = navigator.geolocation.watchPosition(
-                (position) => {
-                    const lat = position.coords.latitude;
-                    const lng = position.coords.longitude;
-                    const speed = position.coords.speed ? (position.coords.speed * 3.6).toFixed(1) : 0; // m/s to km/h
-                    const timestamp = new Date().toLocaleTimeString();
-
-                    // Update Driver Screen UI
-                    debugCoords.innerHTML = `Lat: ${lat.toFixed(5)}<br>Lng: ${lng.toFixed(5)}<br>Speed: ${speed} km/h`;
-
-                    // Send to Firebase
-                    set(ref(database, 'buses/' + BUS_ID), {
-                        lat: lat,
-                        lng: lng,
-                        speed: speed,
-                        lastUpdated: timestamp,
-                        active: true
-                    }).catch(err => console.error("Firebase Error:", err));
-                },
-                (error) => {
-                    // Detailed Error Handling
-                    console.error("GPS Error:", error);
-                    if(error.code === 3) {
-                        // Timeout error - silent retry or inform user
-                         debugCoords.innerText = "Weak Signal. Retrying...";
-                    } else {
-                        alert("GPS Error: " + error.message);
-                        stopSharing(); // Stop if critical error
-                    }
-                },
-                options
-            );
-        });
-
-        btnStop.addEventListener('click', () => {
-            stopSharing();
-        });
-
-        function stopSharing() {
-            if (watchId) {
-                navigator.geolocation.clearWatch(watchId);
-                watchId = null;
-            }
-            
-            // Set active: false in Firebase
-            set(ref(database, 'buses/' + BUS_ID + '/active'), false);
-
-            // UI Reset
+        function initDriverScreen() {
+            showScreen('driver');
+            driverBusName.innerText = selectedBus.name;
+            // Reset UI
             btnStart.classList.remove('hidden');
             btnStop.classList.add('hidden');
             statusText.innerText = "OFFLINE";
             indicator.classList.remove('active');
-            debugCoords.innerText = "Tracking Stopped.";
+            debugCoords.innerText = "Ready to start...";
+        }
+
+        btnStart.addEventListener('click', () => {
+            if (!navigator.geolocation) return alert("GPS not supported");
+
+            btnStart.classList.add('hidden');
+            btnStop.classList.remove('hidden');
+            statusText.innerText = "ONLINE (SHARING)";
+            statusText.style.color = "#00e676";
+            indicator.classList.add('active');
+            debugCoords.innerText = "Acquiring satellites...";
+
+            const options = { enableHighAccuracy: true, timeout: 60000, maximumAge: 5000 };
+            
+            watchId = navigator.geolocation.watchPosition(
+                (pos) => {
+                    const { latitude: lat, longitude: lng, speed } = pos.coords;
+                    const spd = speed ? (speed * 3.6).toFixed(1) : 0;
+                    const time = new Date().toLocaleTimeString();
+
+                    debugCoords.innerHTML = `Lat: ${lat.toFixed(5)} <br> Lng: ${lng.toFixed(5)} <br> Spd: ${spd} km/h`;
+
+                    // Update Firebase
+                    set(ref(database, 'buses/' + selectedBus.id), {
+                        lat, lng, speed: spd, lastUpdated: time, active: true, name: selectedBus.name, route: selectedBus.route
+                    });
+                },
+                (err) => console.error("GPS Error", err),
+                options
+            );
+        });
+
+        btnStop.addEventListener('click', stopDriverSharing);
+
+        function stopDriverSharing() {
+            if (watchId) {
+                navigator.geolocation.clearWatch(watchId);
+                watchId = null;
+            }
+            if (selectedBus) {
+                set(ref(database, 'buses/' + selectedBus.id + '/active'), false);
+            }
+            if (currentMode === 'driver') {
+                btnStart.classList.remove('hidden');
+                btnStop.classList.add('hidden');
+                statusText.innerText = "OFFLINE";
+                statusText.style.color = "#fff";
+                indicator.classList.remove('active');
+                debugCoords.innerText = "Tracking Stopped.";
+            }
         }
 
         // ===========================================
-        // 🎓 STUDENT LOGIC (RECEIVE DATA)
+        // 🎓 STUDENT LOGIC
         // ===========================================
-        function initMap() {
-            // Initialize Map (Default center India, will move to bus)
-            map = L.map('map').setView([20.5937, 78.9629], 5);
-
-            // Add OpenStreetMap Tiles
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '&copy; OpenStreetMap',
+        function initStudentScreen() {
+            showScreen('student');
+            
+            // Map Cleanup & Init
+            if (map) { map.remove(); map = null; }
+            map = L.map('map', { zoomControl: false }).setView([20.5937, 78.9629], 5);
+            
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+                attribution: '&copy; OpenStreetMap &copy; CARTO',
                 maxZoom: 19
             }).addTo(map);
 
-            // Custom Bus Icon
-            const busIcon = L.divIcon({
-                className: 'bus-icon-marker',
-                html: '🚌',
-                iconSize: [40, 40],
-                iconAnchor: [20, 20]
-            });
+            busMarker = null;
+            userMarker = null;
+            routeLine = null;
 
-            // Listen to Firebase Data Changes
-            const busRef = ref(database, 'buses/' + BUS_ID);
-            
+            document.getElementById('sheet-bus-name').innerText = selectedBus.name;
+            document.getElementById('sheet-bus-route').innerText = selectedBus.route;
+
+            // 1. Watch Student Location
+            if (navigator.geolocation) {
+                userWatchId = navigator.geolocation.watchPosition((pos) => {
+                    const lat = pos.coords.latitude;
+                    const lng = pos.coords.longitude;
+                    updateStudentLocation(lat, lng);
+                }, (err) => console.log("User GPS Error"), { enableHighAccuracy: true });
+            }
+
+            // 2. Watch Bus Location (Firebase)
+            const busRef = ref(database, 'buses/' + selectedBus.id);
             onValue(busRef, (snapshot) => {
                 const data = snapshot.val();
-                const sheet = document.getElementById('student-sheet');
-                const badge = document.getElementById('live-badge');
-
-                if (data && data.active) {
-                    // Update UI Data
-                    sheet.classList.add('show');
-                    document.getElementById('disp-speed').innerText = Math.round(data.speed) + " km/h";
-                    document.getElementById('disp-time').innerText = data.lastUpdated;
-                    badge.innerText = "LIVE 🟢";
-                    badge.style.background = "#ccffcc";
-                    badge.style.color = "#006600";
-
-                    // Update Map Marker
-                    if (busMarker) {
-                        busMarker.setLatLng([data.lat, data.lng]);
-                    } else {
-                        busMarker = L.marker([data.lat, data.lng], {icon: busIcon}).addTo(map);
-                    }
-
-                    // Smooth Pan to Bus
-                    map.flyTo([data.lat, data.lng], 16, { animate: true, duration: 1 });
-
-                } else {
-                    // Bus Offline logic
-                    badge.innerText = "OFFLINE 🔴";
-                    badge.style.background = "#ffebee";
-                    badge.style.color = "#c62828";
-                    document.getElementById('disp-speed').innerText = "--";
-                }
+                updateBusOnMap(data);
             });
+        }
+
+        function stopStudentTracking() {
+            if (userWatchId) navigator.geolocation.clearWatch(userWatchId);
+        }
+
+        // Update Student Marker (Blue Dot)
+        let studentLat = null, studentLng = null;
+        function updateStudentLocation(lat, lng) {
+            studentLat = lat;
+            studentLng = lng;
+
+            if (!userMarker) {
+                const userIcon = L.divIcon({ className: 'user-icon-marker', iconSize: [20, 20] });
+                userMarker = L.marker([lat, lng], { icon: userIcon }).addTo(map);
+                map.setView([lat, lng], 15); // Initial focus on user
+            } else {
+                userMarker.setLatLng([lat, lng]);
+            }
+            drawRouteLine();
+        }
+
+        // Update Bus Marker & Info Sheet
+        let busLat = null, busLng = null;
+        function updateBusOnMap(data) {
+            const sheet = document.getElementById('student-sheet');
+            const badge = document.getElementById('live-badge');
+            
+            if (data && data.active) {
+                busLat = data.lat;
+                busLng = data.lng;
+
+                sheet.classList.add('show');
+                document.getElementById('disp-speed').innerText = Math.round(data.speed) + " km/h";
+                document.getElementById('disp-time').innerText = data.lastUpdated;
+                badge.innerText = "LIVE 🟢";
+                badge.style.background = "#e0f2f1"; badge.style.color = "#00695c";
+
+                const busIcon = L.divIcon({
+                    className: 'bus-icon-marker', html: '🚌', iconSize: [40, 40], iconAnchor: [20, 20]
+                });
+
+                if (busMarker) {
+                    busMarker.setLatLng([data.lat, data.lng]);
+                } else {
+                    busMarker = L.marker([data.lat, data.lng], { icon: busIcon }).addTo(map);
+                }
+
+                drawRouteLine();
+            } else {
+                badge.innerText = "OFFLINE 🔴";
+                badge.style.background = "#ffebee"; badge.style.color = "#c62828";
+                document.getElementById('disp-speed').innerText = "--";
+                document.getElementById('distance-badge').classList.add('hidden');
+                
+                if (busMarker) map.removeLayer(busMarker);
+                if (routeLine) map.removeLayer(routeLine);
+                busMarker = null; 
+                routeLine = null;
+                busLat = null;
+            }
+        }
+
+        // Draw Line & Calc Distance
+        function drawRouteLine() {
+            if (studentLat && busLat && busMarker && userMarker) {
+                const latlngs = [[studentLat, studentLng], [busLat, busLng]];
+
+                // Create or Update Line
+                if (routeLine) {
+                    routeLine.setLatLngs(latlngs);
+                } else {
+                    routeLine = L.polyline(latlngs, { color: '#004e92', weight: 4, opacity: 0.7, dashArray: '10, 10' }).addTo(map);
+                }
+
+                // Fit bounds to show both
+                map.fitBounds(L.latLngBounds(latlngs), { padding: [50, 50] });
+
+                // Calculate Distance
+                const distKm = (map.distance([studentLat, studentLng], [busLat, busLng]) / 1000).toFixed(1);
+                
+                const distBadge = document.getElementById('distance-badge');
+                distBadge.classList.remove('hidden');
+                document.getElementById('dist-val').innerText = distKm + " km";
+            }
         }
     </script>
 </body>

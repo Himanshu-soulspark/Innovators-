@@ -3,298 +3,384 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Pro College Bus Tracker (Red Neon)</title>
+    <title>College Bus Tracker (Corporate)</title>
 
     <!-- Leaflet CSS (Map Styles) -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
 
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&family=Orbitron:wght@500;700&display=swap" rel="stylesheet">
+    <!-- Google Fonts: Inter & Roboto for Professional Look -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
 
     <style>
         /* --- CSS STYLES --- */
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
         
-        /* Default background for map screens, overridden in Home */
-        body { background-color: #050000; height: 100vh; overflow: hidden; color: #fff; }
+        body { background-color: #f5f5f7; height: 100vh; overflow: hidden; color: #1d1d1f; }
 
         /* Utility Classes */
         .hidden { display: none !important; }
-        .full-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; background: #fff; z-index: 10; transition: all 0.3s ease; }
+        .full-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; background: #f5f5f7; z-index: 10; transition: all 0.3s ease; }
 
         /* =========================================
-           1. NEW ULTRA-PREMIUM HOME SCREEN
-           Theme: Deep Red, Black, Neon, Cyberpunk
+           1. HOME SCREEN (Clean Corporate)
         ========================================= */
         #screen-home {
             justify-content: center;
             align-items: center;
-            background: radial-gradient(circle at 50% 120%, #4a0000 10%, #000000 80%);
-            color: white;
-            padding: 20px;
+            background: #ffffff;
+            padding: 30px;
             text-align: center;
-            overflow: hidden;
-            position: relative;
         }
 
-        /* Background Effects (Grid & Particles) */
-        #screen-home::before {
-            content: '';
-            position: absolute;
-            width: 200%;
-            height: 200%;
-            background-image: 
-                linear-gradient(rgba(255, 0, 60, 0.1) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(255, 0, 60, 0.1) 1px, transparent 1px);
-            background-size: 40px 40px;
-            transform: perspective(500px) rotateX(60deg) translateY(-100px) translateZ(-200px);
-            opacity: 0.3;
-            animation: gridMove 20s linear infinite;
-            z-index: 1;
-        }
-
-        @keyframes gridMove { 0% { transform: perspective(500px) rotateX(60deg) translateY(0); } 100% { transform: perspective(500px) rotateX(60deg) translateY(40px); } }
-
-        /* Content Container (Z-index correction) */
-        .home-content { z-index: 5; position: relative; width: 100%; max-width: 400px; display: flex; flex-direction: column; align-items: center; }
-
-        /* 3D Hologram Bus Container */
-        .logo-container {
-            position: relative;
-            width: 140px;
-            height: 140px;
-            margin-bottom: 30px;
+        /* Bus Icon - Flat Professional */
+        .home-icon-container {
+            width: 100px;
+            height: 100px;
+            background: #f2f2f7;
+            border-radius: 25px;
             display: flex;
-            justify-content: center;
             align-items: center;
+            justify-content: center;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
         }
+        .logo-text { font-size: 3.5rem; }
 
-        /* Rotating Hologram Ring */
-        .holo-ring {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            border: 2px solid rgba(255, 0, 60, 0.3);
-            border-top: 2px solid #ff003c;
-            border-bottom: 2px solid #ff003c;
-            border-radius: 50%;
-            box-shadow: 0 0 15px rgba(255, 0, 60, 0.4), inset 0 0 10px rgba(255, 0, 60, 0.2);
-            animation: spinRing 8s linear infinite;
-        }
-        .holo-ring::after {
-            content: ''; position: absolute; top: 10%; left: 10%; right: 10%; bottom: 10%;
-            border: 1px dashed rgba(255, 255, 255, 0.2); border-radius: 50%;
-            animation: spinRing 4s linear infinite reverse;
-        }
-
-        @keyframes spinRing { 100% { transform: rotate(360deg); } }
-
-        /* The Bus Icon (Styled to look Metallic Blue/Silver via Filters) */
-        .logo-text { 
-            font-size: 5rem; 
-            filter: hue-rotate(190deg) drop-shadow(0 10px 15px rgba(255, 0, 60, 0.6)); /* Turns yellow bus blueish & adds red glow */
-            animation: floatBus 3s ease-in-out infinite;
-            position: relative;
-            z-index: 2;
-        }
-
-        @keyframes floatBus { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
-
-        /* Typography */
         .app-title {
-            font-family: 'Orbitron', sans-serif; /* Tech Font */
-            font-size: 2.2rem;
-            font-weight: 800;
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #1d1d1f;
             margin-bottom: 5px;
-            text-transform: uppercase;
-            color: #fff;
-            text-shadow: 0 0 10px rgba(255, 0, 60, 0.8), 0 0 20px rgba(255, 0, 60, 0.4);
-            letter-spacing: 1px;
+            letter-spacing: -0.5px;
         }
         .sub-text {
-            font-family: 'Poppins', sans-serif;
-            font-size: 0.9rem;
-            color: rgba(255, 255, 255, 0.7);
-            margin-bottom: 50px;
-            font-weight: 300;
-            letter-spacing: 2px;
-            text-transform: uppercase;
+            font-size: 1rem;
+            color: #86868b;
+            margin-bottom: 60px;
+            font-weight: 400;
         }
 
-        /* Buttons (High Tech) */
+        /* Professional Buttons */
         .btn-select {
             width: 100%;
-            padding: 20px;
+            max-width: 340px;
+            padding: 18px;
             margin: 10px 0;
-            border-radius: 50px; /* Pill shape */
-            font-size: 1.1rem;
+            border-radius: 12px;
+            font-size: 1.05rem;
             font-weight: 600;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 15px;
+            gap: 12px;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        /* Driver Button: Solid Professional Red */
+        .btn-driver {
+            background: #d32f2f; /* Corporate Red */
+            color: #ffffff;
+            border: none;
+        }
+        .btn-driver:active { transform: scale(0.98); background: #b71c1c; }
+
+        /* Student Button: Clean White with Border */
+        .btn-student {
+            background: #ffffff;
+            color: #1d1d1f;
+            border: 1px solid #d1d1d6;
+        }
+        .btn-student:active { transform: scale(0.98); background: #f2f2f7; }
+
+        /* =========================================
+           2. BUS SELECTION SCREEN (Modern Grid)
+        ========================================= */
+        #screen-selection { background: #f5f5f7; display: flex; flex-direction: column; }
+        
+        .selection-header { 
+            margin-top: 60px; 
+            margin-bottom: 25px; 
+            padding: 0 25px;
+            text-align: center; 
+        }
+        .selection-header h2 { 
+            color: #1d1d1f; 
+            font-size: 1.6rem; 
+            font-weight: 700; 
+            letter-spacing: -0.5px;
+        }
+        .selection-header p {
+            color: #86868b;
+            font-size: 0.95rem;
+            margin-top: 5px;
+        }
+
+        .bus-grid { 
+            display: grid; 
+            grid-template-columns: 1fr; /* Single column for better mobile view or 1fr 1fr for tablet */
+            gap: 20px; 
+            padding: 10px 25px 40px; 
+            overflow-y: auto; 
+        }
+        @media (min-width: 360px) { .bus-grid { grid-template-columns: 1fr 1fr; } }
+
+        /* BUS CARD DESIGN */
+        .bus-card { 
+            background: white; 
+            padding: 20px 15px; 
+            border-radius: 16px; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05); 
+            text-align: center; 
+            cursor: pointer; 
+            border: 1px solid transparent; 
+            transition: transform 0.2s, box-shadow 0.2s; 
             position: relative;
             overflow: hidden;
-            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+        .bus-card::before {
+            content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%;
+            background: #d32f2f; /* Red Accent Line */
+            opacity: 0.8;
+        }
+        .bus-card:hover { 
+            transform: translateY(-3px); 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.08); 
         }
 
-        /* Driver Button - Glowing Red Gradient */
-        .btn-driver {
-            background: linear-gradient(135deg, #8b0000 0%, #ff003c 100%);
-            border: none;
-            color: #fff;
-            box-shadow: 0 10px 30px rgba(255, 0, 60, 0.3);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-        .btn-driver::before {
-            content: '';
-            position: absolute; top: 0; left: 0; width: 100%; height: 50%;
-            background: linear-gradient(to bottom, rgba(255,255,255,0.2), transparent);
-            border-radius: 50px 50px 0 0;
-        }
-        .btn-driver:active { transform: scale(0.96); box-shadow: 0 5px 15px rgba(255, 0, 60, 0.5); }
+        .bus-icon-lg { font-size: 2.2rem; margin-bottom: 12px; }
 
-        /* Student Button - Frosted Glass */
-        .btn-student {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 0, 60, 0.5);
-            color: #fff;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        /* MATTE GOLD NAME PLATE */
+        .name-plate {
+            background: linear-gradient(180deg, #E8D5B5 0%, #CDB38B 100%); /* Matte Gold */
+            padding: 6px 10px;
+            border-radius: 4px;
+            margin: 0 auto 8px;
+            border: 1px solid #bfa87f;
+            display: inline-block;
+            width: 90%;
+            box-shadow: inset 0 1px 2px rgba(255,255,255,0.3);
         }
-        .btn-student span { filter: drop-shadow(0 0 5px rgba(255,255,255,0.8)); }
-        .btn-student:active { transform: scale(0.96); background: rgba(255, 255, 255, 0.1); }
+        .bus-card h3 { 
+            font-size: 0.85rem; 
+            color: #3e3832; /* Dark Brown/Black */
+            font-weight: 700; 
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            text-shadow: 0 1px 0 rgba(255,255,255,0.4); /* Engraved Effect */
+        }
 
-        /* Bottom Decoration */
-        .bottom-glow {
-            position: absolute;
-            bottom: -50px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 80%;
-            height: 100px;
-            background: radial-gradient(ellipse at center, rgba(255, 0, 60, 0.4) 0%, transparent 70%);
-            z-index: 2;
-            pointer-events: none;
+        .bus-card p { font-size: 0.75rem; color: #86868b; margin-top: 4px; font-weight: 500; }
+
+        /* =========================================
+           3. DRIVER DASHBOARD (Dark Corporate)
+        ========================================= */
+        #screen-driver { 
+            background: #1c1c1e; /* Deep Charcoal */
+            color: white; 
+            padding: 20px; 
+            align-items: center; 
+            justify-content: center; 
+        }
+
+        .driver-header { position: absolute; top: 80px; text-align: center; width: 100%; }
+        .driver-sub { color: #86868b; font-size: 0.95rem; font-weight: 500; margin-bottom: 10px; }
+        
+        .driver-plate-lg {
+            background: linear-gradient(180deg, #E8D5B5 0%, #CDB38B 100%);
+            padding: 10px 25px;
+            border-radius: 6px;
+            border: 1px solid #bfa87f;
+            display: inline-block;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+        .selected-bus-name { 
+            color: #3e3832; 
+            font-size: 1.4rem; 
+            font-weight: 800; 
+            text-shadow: 0 1px 0 rgba(255,255,255,0.4);
+            text-transform: uppercase;
+        }
+
+        /* Dark Center Card */
+        .status-card { 
+            background: #2c2c2e; 
+            padding: 40px 30px; 
+            border-radius: 20px; 
+            width: 100%; 
+            max-width: 360px; 
+            text-align: center; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2); 
+            border: 1px solid #3a3a3c;
+            position: relative;
+        }
+
+        .driver-status-text {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #86868b; /* Grey when offline */
+            margin-bottom: 5px;
+            letter-spacing: 1px;
+        }
+        .driver-status-sub { font-size: 0.85rem; color: #636366; text-transform: uppercase; letter-spacing: 1px; }
+
+        .divider-line {
+            height: 1px;
+            background: #d32f2f;
+            width: 40px;
+            margin: 25px auto;
+            opacity: 0.7;
+        }
+
+        .coord-display { 
+            font-family: 'Roboto Mono', monospace; 
+            font-size: 0.8rem; 
+            color: #30d158; /* iOS Green */
+            margin-top: 10px; 
+            background: rgba(0,0,0,0.2); 
+            padding: 12px; 
+            border-radius: 8px; 
+            text-align: center;
+        }
+
+        /* Action Buttons */
+        .btn-action { 
+            width: 100%; 
+            padding: 18px; 
+            border-radius: 12px; 
+            border: none; 
+            font-weight: 700; 
+            margin-top: 30px; 
+            cursor: pointer; 
+            font-size: 1.1rem; 
+            letter-spacing: 0.5px; 
+            transition: 0.2s; 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .btn-start { 
+            background: linear-gradient(135deg, #d32f2f, #b71c1c); 
+            color: white; 
+        }
+        .btn-start:active { transform: scale(0.98); }
+        
+        .btn-stop { 
+            background: #3a3a3c; 
+            color: #ff453a; 
+            border: 1px solid #ff453a; 
         }
 
         /* =========================================
-           OTHER SCREENS (Preserved but dark-themed)
+           4. STUDENT SCREEN (Map)
         ========================================= */
-        
-        /* 2. Bus Selection Screen */
-        #screen-selection { background: #f4f7f6; color: #333; }
-        .selection-header { margin-top: 50px; margin-bottom: 20px; text-align: center; }
-        .selection-header h2 { color: #333; font-weight: 700; }
-        .bus-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; overflow-y: auto; padding-bottom: 20px; }
-        .bus-card { background: white; padding: 15px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); text-align: center; cursor: pointer; border: 2px solid transparent; transition: 0.2s; }
-        .bus-card:hover { border-color: #004e92; transform: translateY(-2px); }
-        .bus-card h3 { font-size: 1rem; color: #333; margin: 10px 0 5px; }
-        .bus-card p { font-size: 0.8rem; color: #777; }
-        .bus-icon-lg { font-size: 2rem; }
-
-        /* 3. Driver Screen */
-        #screen-driver { background: #111; color: white; padding: 20px; align-items: center; justify-content: center; }
-        .driver-header { position: absolute; top: 70px; text-align: center; width: 100%; }
-        .selected-bus-name { color: #ffcc00; font-size: 1.5rem; font-weight: 700; }
-        .status-card { background: #222; padding: 40px 30px; border-radius: 25px; width: 100%; max-width: 380px; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.7); border: 1px solid #333; }
-        .indicator { width: 20px; height: 20px; background: #555; border-radius: 50%; margin: 0 auto 20px; transition: 0.3s; }
-        .indicator.active { background: #00ff00; box-shadow: 0 0 25px #00ff00; animation: pulse 1.5s infinite; }
-        @keyframes pulse { 0% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.5); opacity: 0.5; } 100% { transform: scale(1); opacity: 1; } }
-        .coord-display { font-family: 'Courier New', monospace; font-size: 0.85rem; color: #00e676; margin-top: 20px; background: #000; padding: 15px; border-radius: 10px; border: 1px solid #333; text-align: left; }
-        .btn-action { width: 100%; padding: 18px; border-radius: 12px; border: none; font-weight: 700; margin-top: 25px; cursor: pointer; font-size: 1.1rem; text-transform: uppercase; letter-spacing: 1px; transition: 0.2s; }
-        .btn-start { background: linear-gradient(45deg, #00b09b, #96c93d); color: white; box-shadow: 0 5px 20px rgba(0, 176, 155, 0.4); }
-        .btn-stop { background: linear-gradient(45deg, #ff416c, #ff4b2b); color: white; box-shadow: 0 5px 20px rgba(255, 65, 108, 0.4); }
-
-        /* 4. Student Screen (Map) */
         #map { height: 100%; width: 100%; z-index: 1; }
         
-        /* Distance Badge on Map */
-        .distance-badge { position: absolute; top: 80px; right: 20px; background: white; padding: 10px 15px; border-radius: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); z-index: 1000; display: flex; align-items: center; gap: 8px; font-weight: 600; color: #333; }
-        .dist-icon { color: #004e92; }
+        .distance-badge { 
+            position: absolute; top: 80px; right: 20px; 
+            background: white; padding: 12px 18px; 
+            border-radius: 12px; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1); 
+            z-index: 1000; 
+            display: flex; align-items: center; gap: 8px; 
+            font-weight: 600; color: #1d1d1f; 
+        }
+        .dist-icon { color: #d32f2f; }
 
-        /* Bottom Sheet */
-        .bottom-sheet { position: absolute; bottom: 0; left: 0; width: 100%; background: white; border-top-left-radius: 30px; border-top-right-radius: 30px; padding: 30px 25px; box-shadow: 0 -10px 40px rgba(0,0,0,0.2); z-index: 999; transform: translateY(110%); transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .bottom-sheet { 
+            position: absolute; bottom: 0; left: 0; width: 100%; 
+            background: white; 
+            border-top-left-radius: 25px; border-top-right-radius: 25px; 
+            padding: 30px 25px; 
+            box-shadow: 0 -5px 30px rgba(0,0,0,0.1); 
+            z-index: 999; 
+            transform: translateY(110%); 
+            transition: transform 0.4s cubic-bezier(0.19, 1, 0.22, 1); 
+        }
         .bottom-sheet.show { transform: translateY(0); }
+        
         .sheet-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 25px; }
-        .bus-title { font-size: 1.4rem; font-weight: 800; color: #222; }
-        .bus-route-name { font-size: 0.9rem; color: #666; font-weight: 500; }
-        .status-badge { padding: 6px 15px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+        .bus-title { font-size: 1.5rem; font-weight: 800; color: #1d1d1f; letter-spacing: -0.5px; }
+        .bus-route-name { font-size: 0.9rem; color: #86868b; font-weight: 500; }
+        
+        .status-badge { 
+            padding: 6px 12px; border-radius: 6px; 
+            font-size: 0.75rem; font-weight: 700; 
+            text-transform: uppercase; letter-spacing: 0.5px; 
+        }
+
         .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-        .info-box { background: #f8f9fa; padding: 15px; border-radius: 15px; text-align: center; border: 1px solid #eee; }
-        .info-value { font-size: 1.2rem; font-weight: 700; color: #333; }
-        .info-label { font-size: 0.75rem; color: #888; margin-top: 5px; text-transform: uppercase; }
+        .info-box { 
+            background: #f5f5f7; padding: 15px; 
+            border-radius: 12px; text-align: center; 
+        }
+        .info-value { font-size: 1.2rem; font-weight: 700; color: #1d1d1f; }
+        .info-label { font-size: 0.75rem; color: #86868b; margin-top: 5px; text-transform: uppercase; }
 
         /* Back Button */
-        .back-btn { position: absolute; top: 20px; left: 20px; z-index: 1000; background: white; width: 45px; height: 45px; border-radius: 50%; border: none; font-size: 1.2rem; box-shadow: 0 4px 15px rgba(0,0,0,0.15); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; color: #333; }
-        .back-btn:hover { background: #eee; }
+        .back-btn { 
+            position: absolute; top: 20px; left: 20px; z-index: 1000; 
+            background: white; width: 44px; height: 44px; 
+            border-radius: 12px; border: none; font-size: 1.2rem; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1); 
+            cursor: pointer; display: flex; align-items: center; justify-content: center; 
+            color: #1d1d1f; transition: 0.2s; 
+        }
+        .back-btn:active { transform: scale(0.95); background: #f2f2f7; }
 
         /* Map Markers */
-        .bus-icon-marker { font-size: 40px; text-align: center; line-height: 1; filter: drop-shadow(3px 5px 2px rgba(0,0,0,0.3)); }
-        .user-icon-marker { width: 20px; height: 20px; background: #2196f3; border: 3px solid white; border-radius: 50%; box-shadow: 0 0 0 10px rgba(33, 150, 243, 0.2); }
+        .bus-icon-marker { font-size: 40px; text-align: center; line-height: 1; filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.3)); }
+        .user-icon-marker { width: 18px; height: 18px; background: #007aff; border: 3px solid white; border-radius: 50%; box-shadow: 0 2px 6px rgba(0,0,0,0.2); }
     </style>
 </head>
 <body>
 
-    <!-- SCREEN 1: HOME (REDESIGNED) -->
+    <!-- SCREEN 1: HOME (Corporate Style) -->
     <div id="screen-home" class="full-screen">
-        <div class="home-content">
-            <!-- 3D Hologram Bus Icon -->
-            <div class="logo-container">
-                <div class="holo-ring"></div>
-                <div class="logo-text">🚌</div>
-            </div>
-
-            <!-- Title Section -->
-            <div class="app-title">College Bus<br>Tracker</div>
-            <p class="sub-text">Premium Live Location System</p>
-            
-            <!-- Driver Button (Neon Red) -->
-            <button class="btn-select btn-driver" id="select-driver-mode">
-                <span style="font-size: 1.4rem;">👮‍♂️</span> 
-                <span>I am the Driver</span>
-            </button>
-
-            <!-- Student Button (Glassmorphism) -->
-            <button class="btn-select btn-student" id="select-student-mode">
-                <span style="font-size: 1.4rem;">🎓</span> 
-                <span>I am a Student</span>
-            </button>
-
-            <!-- Bottom Glow Decor -->
-            <div class="bottom-glow"></div>
+        <div class="home-icon-container">
+            <div class="logo-text">🚌</div>
         </div>
+        <div class="app-title">College Bus Tracker</div>
+        <p class="sub-text">Enterprise Location System</p>
+        
+        <button class="btn-select btn-driver" id="select-driver-mode">
+            <span>👮‍♂️</span> I am the Driver
+        </button>
+        <button class="btn-select btn-student" id="select-student-mode">
+            <span>🎓</span> I am a Student
+        </button>
     </div>
 
-    <!-- SCREEN 2: BUS SELECTION -->
+    <!-- SCREEN 2: BUS SELECTION (Grid with Golden Plates) -->
     <div id="screen-selection" class="full-screen hidden">
         <button class="back-btn" onclick="goHome()">&#8592;</button>
         <div class="selection-header">
             <h2>Select Your Bus</h2>
-            <p style="color: #777;">Choose the bus to track or drive</p>
+            <p>Choose your bus to track or drive</p>
         </div>
         <div class="bus-grid" id="bus-grid-container">
             <!-- Grid generated by JS -->
         </div>
     </div>
 
-    <!-- SCREEN 3: DRIVER DASHBOARD -->
+    <!-- SCREEN 3: DRIVER DASHBOARD (Dark Mode Professional) -->
     <div id="screen-driver" class="full-screen hidden">
         <button class="back-btn" onclick="goSelection()">&#8592;</button>
         
         <div class="driver-header">
-            <p style="color: #888; font-size: 0.9rem;">You are driving</p>
-            <div id="driver-bus-name" class="selected-bus-name">BUS NAME</div>
+            <p class="driver-sub">You are driving</p>
+            <div class="driver-plate-lg">
+                <div id="driver-bus-name" class="selected-bus-name">BUS NAME</div>
+            </div>
         </div>
 
         <div class="status-card">
-            <div id="status-indicator" class="indicator"></div>
-            <h2 id="driver-status">OFFLINE</h2>
-            <p style="color: #888; font-size: 0.9rem; margin-top: 5px;">GPS Tracking System</p>
+            <h2 id="driver-status" class="driver-status-text">OFFLINE</h2>
+            <p class="driver-status-sub">GPS Tracking System</p>
+            
+            <div class="divider-line"></div>
             
             <div class="coord-display" id="debug-coords">
-                Waiting for GPS initialization...
+                System ready to start
             </div>
 
             <button id="btn-start" class="btn-action btn-start">START SHARING</button>
@@ -302,13 +388,13 @@
         </div>
     </div>
 
-    <!-- SCREEN 4: STUDENT MAP -->
+    <!-- SCREEN 4: STUDENT MAP (Clean UI) -->
     <div id="screen-student" class="full-screen hidden">
         <button class="back-btn" onclick="goSelection()">&#8592;</button>
         
         <!-- Distance Float -->
         <div class="distance-badge hidden" id="distance-badge">
-            <span class="dist-icon">📏</span>
+            <span class="dist-icon">📍</span>
             <span id="dist-val">0 km</span> away
         </div>
 
@@ -321,12 +407,12 @@
                     <div class="bus-title" id="sheet-bus-name">Bus Name</div>
                     <div class="bus-route-name" id="sheet-bus-route">Route Info</div>
                 </div>
-                <div class="status-badge" id="live-badge">OFFLINE 🔴</div>
+                <div class="status-badge" id="live-badge">OFFLINE</div>
             </div>
             <div class="info-grid">
                 <div class="info-box">
                     <div class="info-value" id="disp-speed">0 km/h</div>
-                    <div class="info-label">Current Speed</div>
+                    <div class="info-label">Speed</div>
                 </div>
                 <div class="info-box">
                     <div class="info-value" id="disp-time">--:--</div>
@@ -360,15 +446,15 @@
         const app = initializeApp(firebaseConfig);
         const database = getDatabase(app);
 
-        // --- BUS DATA (POWERFUL NAMES) ---
+        // --- BUS DATA (Updated to User Request) ---
         const BUS_DATA = [
-            { id: 'bus1', name: '⚡ THUNDERBOLT', route: 'North Campus Route' },
-            { id: 'bus2', name: '🦅 FALCON', route: 'South City Express' },
-            { id: 'bus3', name: '🛡️ GUARDIAN', route: 'West End Shuttle' },
-            { id: 'bus4', name: '🚀 VOYAGER', route: 'Central Station Line' },
-            { id: 'bus5', name: '🌪️ TORNADO', route: 'Highway Express' },
-            { id: 'bus6', name: '🦁 TITAN', route: 'Old City Connect' },
-            { id: 'bus7', name: '💎 DIAMOND', route: 'Girls Hostel Special' }
+            { id: 'bus1', name: 'THUNDERBOLT', route: 'North Campus Route' },
+            { id: 'bus2', name: 'FALCON', route: 'South City Express' },
+            { id: 'bus3', name: 'GUARDIAN', route: 'West End Shuttle' },
+            { id: 'bus4', name: 'VOYAGER', route: 'Central Station Line' },
+            { id: 'bus5', name: 'TORNADO', route: 'Highway Express' },
+            { id: 'bus6', name: 'TITAN', route: 'Old City Connect' },
+            { id: 'bus7', name: 'PHOENIX', route: 'Riverside Corridor' }
         ];
 
         // --- STATE MANAGEMENT ---
@@ -419,7 +505,7 @@
             screens[screenName].classList.remove('hidden');
         }
 
-        // --- RENDER BUS GRID ---
+        // --- RENDER BUS GRID (Updated for Golden Plate Design) ---
         function renderBusGrid() {
             const container = document.getElementById('bus-grid-container');
             container.innerHTML = '';
@@ -427,9 +513,12 @@
             BUS_DATA.forEach(bus => {
                 const card = document.createElement('div');
                 card.className = 'bus-card';
+                // Flat bus illustration + Gold Plate
                 card.innerHTML = `
                     <div class="bus-icon-lg">🚌</div>
-                    <h3>${bus.name}</h3>
+                    <div class="name-plate">
+                        <h3>${bus.name}</h3>
+                    </div>
                     <p>${bus.route}</p>
                 `;
                 card.onclick = () => selectBus(bus);
@@ -452,7 +541,6 @@
         const btnStart = document.getElementById('btn-start');
         const btnStop = document.getElementById('btn-stop');
         const statusText = document.getElementById('driver-status');
-        const indicator = document.getElementById('status-indicator');
         const debugCoords = document.getElementById('debug-coords');
         const driverBusName = document.getElementById('driver-bus-name');
 
@@ -463,8 +551,9 @@
             btnStart.classList.remove('hidden');
             btnStop.classList.add('hidden');
             statusText.innerText = "OFFLINE";
-            indicator.classList.remove('active');
-            debugCoords.innerText = "Ready to start...";
+            statusText.style.color = "#86868b";
+            debugCoords.innerText = "System ready to start";
+            debugCoords.style.color = "#86868b";
         }
 
         btnStart.addEventListener('click', () => {
@@ -472,10 +561,10 @@
 
             btnStart.classList.add('hidden');
             btnStop.classList.remove('hidden');
-            statusText.innerText = "ONLINE (SHARING)";
-            statusText.style.color = "#00e676";
-            indicator.classList.add('active');
-            debugCoords.innerText = "Acquiring satellites...";
+            statusText.innerText = "ONLINE";
+            statusText.style.color = "#30d158"; // Green
+            debugCoords.innerText = "Connecting to satellites...";
+            debugCoords.style.color = "#30d158";
 
             const options = { enableHighAccuracy: true, timeout: 60000, maximumAge: 5000 };
             
@@ -485,7 +574,7 @@
                     const spd = speed ? (speed * 3.6).toFixed(1) : 0;
                     const time = new Date().toLocaleTimeString();
 
-                    debugCoords.innerHTML = `Lat: ${lat.toFixed(5)} <br> Lng: ${lng.toFixed(5)} <br> Spd: ${spd} km/h`;
+                    debugCoords.innerHTML = `LAT: ${lat.toFixed(5)} | LNG: ${lng.toFixed(5)}`;
 
                     // Update Firebase
                     set(ref(database, 'buses/' + selectedBus.id), {
@@ -511,9 +600,9 @@
                 btnStart.classList.remove('hidden');
                 btnStop.classList.add('hidden');
                 statusText.innerText = "OFFLINE";
-                statusText.style.color = "#fff";
-                indicator.classList.remove('active');
-                debugCoords.innerText = "Tracking Stopped.";
+                statusText.style.color = "#86868b";
+                debugCoords.innerText = "Tracking Stopped";
+                debugCoords.style.color = "#86868b";
             }
         }
 
@@ -560,16 +649,16 @@
             if (userWatchId) navigator.geolocation.clearWatch(userWatchId);
         }
 
-        // Update Student Marker (Blue Dot)
+        // Update Student Marker
         let studentLat = null, studentLng = null;
         function updateStudentLocation(lat, lng) {
             studentLat = lat;
             studentLng = lng;
 
             if (!userMarker) {
-                const userIcon = L.divIcon({ className: 'user-icon-marker', iconSize: [20, 20] });
+                const userIcon = L.divIcon({ className: 'user-icon-marker', iconSize: [18, 18] });
                 userMarker = L.marker([lat, lng], { icon: userIcon }).addTo(map);
-                map.setView([lat, lng], 15); // Initial focus on user
+                map.setView([lat, lng], 15);
             } else {
                 userMarker.setLatLng([lat, lng]);
             }
@@ -589,8 +678,8 @@
                 sheet.classList.add('show');
                 document.getElementById('disp-speed').innerText = Math.round(data.speed) + " km/h";
                 document.getElementById('disp-time').innerText = data.lastUpdated;
-                badge.innerText = "LIVE 🟢";
-                badge.style.background = "#e0f2f1"; badge.style.color = "#00695c";
+                badge.innerText = "LIVE";
+                badge.style.background = "#e8f5e9"; badge.style.color = "#2e7d32";
 
                 const busIcon = L.divIcon({
                     className: 'bus-icon-marker', html: '🚌', iconSize: [40, 40], iconAnchor: [20, 20]
@@ -604,7 +693,7 @@
 
                 drawRouteLine();
             } else {
-                badge.innerText = "OFFLINE 🔴";
+                badge.innerText = "OFFLINE";
                 badge.style.background = "#ffebee"; badge.style.color = "#c62828";
                 document.getElementById('disp-speed').innerText = "--";
                 document.getElementById('distance-badge').classList.add('hidden');
@@ -626,7 +715,7 @@
                 if (routeLine) {
                     routeLine.setLatLngs(latlngs);
                 } else {
-                    routeLine = L.polyline(latlngs, { color: '#004e92', weight: 4, opacity: 0.7, dashArray: '10, 10' }).addTo(map);
+                    routeLine = L.polyline(latlngs, { color: '#d32f2f', weight: 4, opacity: 0.8 }).addTo(map);
                 }
 
                 // Fit bounds to show both

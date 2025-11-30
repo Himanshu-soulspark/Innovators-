@@ -221,7 +221,9 @@
         @keyframes scan { 0% {top:0;} 100% {top:100%;} }
 
         /* === SCREEN 5: STUDENT MAP UI === */
-        #map { height: calc(100% - 60px); width: 100%; z-index: 1; filter: contrast(1.2) grayscale(0.2); }
+        #map { height: calc(100% - 60px); width: 100%; z-index: 1; filter: contrast(1.2) grayscale(0.2); transition: filter 0.5s; }
+        .map-light { filter: contrast(1) grayscale(0) !important; }
+        
         .glass-panel-map {
             position: absolute; bottom: 80px; left: 10px; right: 10px;
             background: rgba(2, 11, 20, 0.85); backdrop-filter: blur(12px);
@@ -242,8 +244,35 @@
         }
         .nav-item.active { color: var(--neon-cyan); text-shadow: 0 0 5px var(--neon-cyan); }
         
-        .marker-pin-bus { font-size: 30px; filter: drop-shadow(0 0 10px var(--neon-cyan)); }
+        /* NAVIGATION ARROW ICON */
+        .arrow-icon-wrapper {
+            width: 40px; height: 40px;
+            display: flex; justify-content: center; align-items: center;
+            transition: transform 0.5s linear; /* Smooth rotation */
+        }
+        .nav-arrow {
+            width: 0; height: 0; 
+            border-left: 12px solid transparent;
+            border-right: 12px solid transparent;
+            border-bottom: 30px solid var(--neon-cyan);
+            filter: drop-shadow(0 0 10px var(--neon-cyan));
+            position: relative;
+        }
+        .nav-arrow::after {
+            content: ''; position: absolute; top: 10px; left: -6px;
+            width: 12px; height: 12px; background: #000; border-radius: 50%;
+        }
+
         .marker-pin-station { font-size: 28px; filter: drop-shadow(0 0 10px #ff00ea); text-align: center; color: #ff00ea; }
+
+        /* TOGGLE BUTTON */
+        .map-toggle-btn {
+            position: absolute; top: 20px; right: 20px; z-index: 1000;
+            background: rgba(0,0,0,0.7); border: 1px solid white;
+            color: white; padding: 8px; border-radius: 50%;
+            cursor: pointer; backdrop-filter: blur(5px);
+        }
+        .map-toggle-btn.light { background: white; color: black; border-color: black; }
 
         /* MODAL OVERLAY */
         .modal-overlay {
@@ -258,6 +287,13 @@
             transform: scale(0.9); transition: transform 0.3s;
         }
         .modal-overlay.open .modal-content { transform: scale(1); }
+
+        /* Input Styles */
+        .input-field {
+            width: 100%; bg: black; border: 1px solid #333; border-radius: 5px; 
+            padding: 10px; color: white; margin-top: 5px; outline: none;
+        }
+        .input-field:focus { border-color: var(--taxi-yellow); }
     </style>
 </head>
 <body>
@@ -480,10 +516,20 @@
 
     <!-- SCREEN 5: STUDENT MAP & NAV -->
     <div id="screen-student" class="full-screen hidden">
+        
+        <!-- Toggle Map Theme -->
+        <button id="toggle-map-btn" class="map-toggle-btn" onclick="toggleMapTheme()">
+            <span class="material-symbols-outlined">light_mode</span>
+        </button>
+
         <div class="glass-panel-map" id="student-info-panel">
             <div class="panel-data">
                 <div style="color:#888; font-size:0.8rem;">SPEED</div>
                 <span style="font-family:'Orbitron'; font-size:1.2rem;" id="disp-speed">0 KM/H</span>
+            </div>
+            <div class="panel-data" style="text-align: center;">
+                <div style="color:#888; font-size:0.8rem;">ETA</div>
+                <span style="font-family:'Orbitron'; font-size:1.2rem; color: var(--neon-cyan);" id="disp-eta">-- MIN</span>
             </div>
             <div class="panel-data" style="text-align: right;">
                 <div style="color:#888; font-size:0.8rem;">LAST UPDATE</div>
@@ -502,7 +548,7 @@
                 <span class="material-symbols-outlined" style="font-size: 1.5rem;">map</span>
                 <span style="font-size: 0.7rem;">MAP</span>
             </div>
-            <div class="nav-item" onclick="toggleRouteView(this)">
+            <div class="nav-item" onclick="openRouteList()">
                 <span class="material-symbols-outlined" style="font-size: 1.5rem;">alt_route</span>
                 <span style="font-size: 0.7rem;">ROUTE</span>
             </div>
@@ -526,18 +572,39 @@
         </div>
     </div>
 
+    <!-- MODAL: ROUTE LIST (STUDENT) -->
+    <div id="modal-route-list" class="modal-overlay">
+        <div class="modal-content">
+            <div class="flex justify-between items-center mb-4 border-b border-white/20 pb-2">
+                <h3 class="text-neon-cyan font-bold tracking-widest">ROUTE STATIONS</h3>
+                <button onclick="closeModal('modal-route-list')" class="text-red-500 font-bold">X</button>
+            </div>
+            <div id="route-list-content" class="space-y-3">
+                <!-- Route Items Here -->
+            </div>
+        </div>
+    </div>
+
     <!-- MODAL: PROFILE (STUDENT) -->
     <div id="modal-profile" class="modal-overlay">
         <div class="modal-content bg-card-bg">
             <h3 class="text-primary font-bold text-xl mb-4 text-center">STUDENT IDENTITY</h3>
-            <div class="space-y-4">
+            <div class="space-y-3">
                 <div>
                     <label class="text-xs text-gray-500 uppercase">Full Name</label>
-                    <input type="text" id="prof-name" class="w-full bg-black border border-white/20 rounded p-2 text-white focus:border-primary outline-none">
+                    <input type="text" id="prof-name" class="w-full bg-black border border-white/20 rounded p-2 text-white focus:border-primary outline-none input-field">
                 </div>
                 <div>
-                    <label class="text-xs text-gray-500 uppercase">Student ID</label>
-                    <input type="text" id="prof-id" class="w-full bg-black border border-white/20 rounded p-2 text-white focus:border-primary outline-none">
+                    <label class="text-xs text-gray-500 uppercase">Phone Number</label>
+                    <input type="tel" id="prof-phone" class="w-full bg-black border border-white/20 rounded p-2 text-white focus:border-primary outline-none input-field">
+                </div>
+                <div>
+                    <label class="text-xs text-gray-500 uppercase">Email Address</label>
+                    <input type="email" id="prof-email" class="w-full bg-black border border-white/20 rounded p-2 text-white focus:border-primary outline-none input-field">
+                </div>
+                <div>
+                    <label class="text-xs text-gray-500 uppercase">Address / Stop</label>
+                    <input type="text" id="prof-address" class="w-full bg-black border border-white/20 rounded p-2 text-white focus:border-primary outline-none input-field">
                 </div>
                 <button onclick="saveProfile()" class="w-full bg-primary text-black font-bold py-3 rounded mt-4">ESTABLISH ID</button>
                 <button onclick="closeModal('modal-profile')" class="w-full text-gray-500 text-xs py-2">CANCEL</button>
@@ -586,7 +653,10 @@
         let busMarker = null;
         let stationMarkers = [];
         let isDriving = false;
-        let currentPos = null; // Stores driver's current position for station adding
+        let currentPos = null;
+        let studentWatchId = null;
+        let studentPos = null;
+        let routePolyline = null;
 
         // Navigation
         const screens = {
@@ -675,12 +745,11 @@
             document.getElementById('driver-bus-name').innerText = selectedBus.name;
             resetDriverUI();
             
-            // Handle Station Button (Long Press and Click)
             const stnBtn = document.getElementById('btn-add-station');
             let pressTimer;
 
             stnBtn.addEventListener('touchstart', (e) => {
-                e.preventDefault(); // prevent click
+                e.preventDefault(); 
                 pressTimer = setTimeout(() => {
                     openStationList();
                 }, 800);
@@ -690,7 +759,6 @@
                 clearTimeout(pressTimer);
             });
             
-            // Mouse events for desktop testing
             stnBtn.addEventListener('mousedown', () => {
                 pressTimer = setTimeout(() => {
                     openStationList();
@@ -700,7 +768,6 @@
                 clearTimeout(pressTimer);
             });
             
-            // Regular click for Adding (if not long pressed)
             stnBtn.onclick = () => {
                 if(!isDriving) return alert("Please Activate Sequence First");
                 if(pressTimer) clearTimeout(pressTimer); 
@@ -759,15 +826,16 @@
                 if(statusText) statusText.innerText = "ONLINE - TRANSMITTING";
 
                 watchId = navigator.geolocation.watchPosition(pos => {
-                    const { latitude: lat, longitude: lng, speed } = pos.coords;
+                    const { latitude: lat, longitude: lng, speed, heading } = pos.coords;
                     currentPos = { lat, lng };
                     const spd = speed ? (speed * 3.6).toFixed(1) : 0;
                     const time = new Date().toLocaleTimeString();
+                    const head = heading || 0;
 
-                    debugCoords.innerHTML = `> LAT: ${lat.toFixed(5)} | LNG: ${lng.toFixed(5)}<br>> SPD: ${spd} KM/H | T: ${time}`;
+                    debugCoords.innerHTML = `> LAT: ${lat.toFixed(5)} | LNG: ${lng.toFixed(5)}<br>> SPD: ${spd} KM/H | HDG: ${Math.round(head)}°`;
 
                     set(ref(database, 'buses/' + selectedBus.id + '/data'), {
-                        lat, lng, speed: spd, lastUpdated: time, active: true, 
+                        lat, lng, speed: spd, heading: head, lastUpdated: time, active: true, 
                         name: selectedBus.name, route: selectedBus.desc
                     });
                 }, err => console.error(err), { enableHighAccuracy: true });
@@ -835,45 +903,90 @@
         window.openProfile = function() {
             document.getElementById('modal-profile').classList.add('open');
             // Load existing
-            const storedName = localStorage.getItem('studentName');
-            const storedId = localStorage.getItem('studentId');
-            if(storedName) document.getElementById('prof-name').value = storedName;
-            if(storedId) document.getElementById('prof-id').value = storedId;
+            if(localStorage.getItem('studentName')) document.getElementById('prof-name').value = localStorage.getItem('studentName');
+            if(localStorage.getItem('studentPhone')) document.getElementById('prof-phone').value = localStorage.getItem('studentPhone');
+            if(localStorage.getItem('studentEmail')) document.getElementById('prof-email').value = localStorage.getItem('studentEmail');
+            if(localStorage.getItem('studentAddress')) document.getElementById('prof-address').value = localStorage.getItem('studentAddress');
         }
 
         window.saveProfile = function() {
             const name = document.getElementById('prof-name').value;
-            const id = document.getElementById('prof-id').value;
-            if(name && id) {
+            const phone = document.getElementById('prof-phone').value;
+            const email = document.getElementById('prof-email').value;
+            const address = document.getElementById('prof-address').value;
+            
+            if(name && phone) {
                 localStorage.setItem('studentName', name);
-                localStorage.setItem('studentId', id);
+                localStorage.setItem('studentPhone', phone);
+                localStorage.setItem('studentEmail', email);
+                localStorage.setItem('studentAddress', address);
                 closeModal('modal-profile');
                 alert(`IDENTITY CONFIRMED: ${name}`);
+            } else {
+                alert("Name and Phone are required.");
             }
         }
 
-        // --- STUDENT LOGIC ---
+        // --- STUDENT MAP LOGIC ---
         function initStudentScreen() {
             showScreen('student');
             if (map) { map.remove(); map = null; }
             map = L.map('map', { zoomControl: false }).setView([20.5937, 78.9629], 5);
-            L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+            
+            // Default Dark Mode
+            const darkTile = 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
+            L.tileLayer(darkTile, {
                 attribution: '&copy; CARTO',
                 maxZoom: 19
             }).addTo(map);
 
             busMarker = null;
             stationMarkers = [];
+            routePolyline = null;
+            studentPos = null;
+
+            // Watch Student Location
+            if (navigator.geolocation) {
+                studentWatchId = navigator.geolocation.watchPosition(pos => {
+                    studentPos = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+                    updatePolylineAndETA();
+                });
+            }
 
             // Listen for Bus Position
             const busRef = ref(database, 'buses/' + selectedBus.id + '/data');
             onValue(busRef, (snapshot) => {
                 const data = snapshot.val();
                 updateMapDisplay(data);
+                updatePolylineAndETA(data);
             });
 
-            // Listen for Stations (but don't show unless toggle is on)
+            // Listen for Stations (for Route List and Map)
             loadStationsForMap();
+        }
+
+        // --- MAP THEME TOGGLE ---
+        window.toggleMapTheme = function() {
+            const mapContainer = document.getElementById('map');
+            const btn = document.getElementById('toggle-map-btn');
+            const isLight = mapContainer.classList.contains('map-light');
+            
+            if(isLight) {
+                // Switch to Dark
+                mapContainer.classList.remove('map-light');
+                btn.classList.remove('light');
+                btn.innerHTML = '<span class="material-symbols-outlined">light_mode</span>';
+                
+                // Leaflet doesn't support instant tile swapping easily without re-init or layer control, 
+                // but CSS filter works great for Dark/Light inversion on dark tiles.
+                // However, for pure light mode, let's just use CSS filter on the container
+                // The CSS .map-light removes the contrast/grayscale filter.
+            } else {
+                // Switch to Light
+                mapContainer.classList.add('map-light');
+                btn.classList.add('light');
+                btn.innerHTML = '<span class="material-symbols-outlined">dark_mode</span>';
+            }
         }
 
         function updateMapDisplay(data) {
@@ -883,41 +996,89 @@
                 document.getElementById('disp-speed').innerText = Math.round(data.speed) + " KM/H";
                 document.getElementById('disp-time').innerText = data.lastUpdated;
 
-                const busIcon = L.divIcon({ className: 'marker-pin-bus', html: '🚌', iconSize: [40, 40] });
+                // Rotatable Arrow Icon
+                const arrowHtml = `
+                    <div class="arrow-icon-wrapper" style="transform: rotate(${data.heading || 0}deg);">
+                        <div class="nav-arrow"></div>
+                    </div>
+                `;
+                const busIcon = L.divIcon({ 
+                    className: 'custom-bus-arrow', 
+                    html: arrowHtml, 
+                    iconSize: [40, 40],
+                    iconAnchor: [20, 20]
+                });
 
-                if (busMarker) busMarker.setLatLng([data.lat, data.lng]);
-                else busMarker = L.marker([data.lat, data.lng], { icon: busIcon }).addTo(map);
+                if (busMarker) {
+                    busMarker.setLatLng([data.lat, data.lng]);
+                    busMarker.setIcon(busIcon);
+                } else {
+                    busMarker = L.marker([data.lat, data.lng], { icon: busIcon }).addTo(map);
+                }
 
-                map.setView([data.lat, data.lng], 15);
+                map.setView([data.lat, data.lng], 16);
             } else {
                 panel.classList.remove('show');
             }
         }
 
-        let isRouteVisible = false;
+        function updatePolylineAndETA(busData) {
+            // Need both positions to draw line and calc ETA
+            if (!studentPos || !busMarker) return;
+            
+            const busLatLng = busMarker.getLatLng();
+            const studentLatLng = [studentPos.lat, studentPos.lng];
+
+            // Draw Line
+            if (routePolyline) map.removeLayer(routePolyline);
+            routePolyline = L.polyline([studentLatLng, busLatLng], {
+                color: '#00f3ff',
+                weight: 3,
+                dashArray: '10, 10',
+                opacity: 0.7
+            }).addTo(map);
+
+            // Calculate ETA
+            // Distance (Haversine approx)
+            const R = 6371; 
+            const dLat = (busLatLng.lat - studentPos.lat) * Math.PI / 180;
+            const dLon = (busLatLng.lng - studentPos.lng) * Math.PI / 180;
+            const a = 
+                Math.sin(dLat/2) * Math.sin(dLat/2) +
+                Math.cos(studentPos.lat * Math.PI / 180) * Math.cos(busLatLng.lat * Math.PI / 180) * 
+                Math.sin(dLon/2) * Math.sin(dLon/2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
+            const distanceKM = R * c;
+
+            // Get speed from current bus data or UI
+            const speedText = document.getElementById('disp-speed').innerText;
+            const speedVal = parseFloat(speedText) || 0;
+
+            const etaEl = document.getElementById('disp-eta');
+            
+            if (speedVal > 1) {
+                const timeHours = distanceKM / speedVal;
+                const timeMin = Math.round(timeHours * 60);
+                etaEl.innerText = timeMin + " MIN";
+            } else {
+                etaEl.innerText = "-- MIN";
+            }
+        }
+
         let stationDataCache = {};
 
         function loadStationsForMap() {
             const stationRef = ref(database, 'buses/' + selectedBus.id + '/stations');
             onValue(stationRef, (snapshot) => {
                 stationDataCache = snapshot.val() || {};
-                if(isRouteVisible) renderStationsOnMap(); 
+                renderStationsOnMap(); // Always show stations now as requested by user context logic implies visibility
             });
         }
 
-        window.toggleRouteView = function(btn) {
-            isRouteVisible = !isRouteVisible;
-            if(isRouteVisible) {
-                btn.classList.add('active');
-                renderStationsOnMap();
-            } else {
-                btn.classList.remove('active');
-                clearStationsFromMap();
-            }
-        }
-
         function renderStationsOnMap() {
-            clearStationsFromMap();
+            stationMarkers.forEach(m => map.removeLayer(m));
+            stationMarkers = [];
+            
             const icon = L.divIcon({ className: 'marker-pin-station', html: '📍', iconSize: [30, 30] });
             
             Object.values(stationDataCache).forEach(stn => {
@@ -928,9 +1089,31 @@
             });
         }
 
-        function clearStationsFromMap() {
-            stationMarkers.forEach(m => map.removeLayer(m));
-            stationMarkers = [];
+        window.openRouteList = function() {
+            const modal = document.getElementById('modal-route-list');
+            const container = document.getElementById('route-list-content');
+            modal.classList.add('open');
+            container.innerHTML = '';
+
+            if (Object.keys(stationDataCache).length === 0) {
+                container.innerHTML = '<div class="text-center text-gray-500">NO STOPS RECORDED</div>';
+                return;
+            }
+
+            Object.values(stationDataCache).forEach(stn => {
+                const div = document.createElement('div');
+                div.className = "flex justify-between items-center bg-white/5 p-3 rounded border border-white/10";
+                div.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <span class="material-symbols-outlined text-primary">location_on</span>
+                        <div>
+                            <div class="text-white font-bold text-sm">${stn.name}</div>
+                            <div class="text-[10px] text-gray-400">ARRIVAL: ${stn.time}</div>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
         }
 
         // --- ONBOARDING LOGIC ---

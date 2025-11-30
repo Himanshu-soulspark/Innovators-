@@ -3,421 +3,353 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>College Bus Tracker (Corporate)</title>
+    <title>CAMPUS RIDE (Cyberpunk Edition)</title>
 
     <!-- Leaflet CSS (Map Styles) -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
 
-    <!-- Google Fonts: Inter & Roboto for Professional Look -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <!-- Google Fonts: Sci-Fi & Tech -->
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Rajdhani:wght@300;500;700&display=swap" rel="stylesheet">
 
     <style>
-        /* --- CSS STYLES --- */
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
+        /* =========================================
+           GLOBAL CYBERPUNK THEME
+        ========================================= */
+        :root {
+            --bg-dark: #020b14;
+            --neon-cyan: #00f3ff;
+            --neon-blue: #0077ff;
+            --neon-alert: #ff003c;
+            --glass-bg: rgba(2, 11, 20, 0.7);
+            --glass-border: rgba(0, 243, 255, 0.3);
+            --text-main: #e0faff;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Rajdhani', sans-serif; -webkit-tap-highlight-color: transparent; }
         
-        body { background-color: #f5f5f7; height: 100vh; overflow: hidden; color: #1d1d1f; }
+        body { 
+            background-color: var(--bg-dark); 
+            color: var(--text-main); 
+            height: 100vh; 
+            overflow: hidden; 
+            background-image: 
+                linear-gradient(rgba(0, 243, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 243, 255, 0.03) 1px, transparent 1px);
+            background-size: 30px 30px;
+        }
 
         /* Utility Classes */
         .hidden { display: none !important; }
-        .full-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; background: #f5f5f7; z-index: 10; transition: all 0.3s ease; }
-
-        /* =========================================
-           1. HOME SCREEN (Clean Corporate)
-        ========================================= */
-        #screen-home {
-            justify-content: center;
-            align-items: center;
-            background: #ffffff;
-            padding: 30px;
-            text-align: center;
+        .full-screen { 
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
+            display: flex; flex-direction: column; 
+            background: transparent; 
+            z-index: 10; 
+            transition: opacity 0.4s ease;
         }
 
-        /* Bus Icon - Flat Professional */
-        .home-icon-container {
-            width: 100px;
-            height: 100px;
-            background: #f2f2f7;
-            border-radius: 25px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 25px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-        }
-        .logo-text { font-size: 3.5rem; }
-
-        .app-title {
-            font-size: 1.8rem;
+        /* HOLOGRAPHIC BUTTONS */
+        .btn-cyber {
+            background: rgba(0, 243, 255, 0.1);
+            border: 1px solid var(--neon-cyan);
+            color: var(--neon-cyan);
+            padding: 15px 30px;
+            font-family: 'Orbitron', sans-serif;
             font-weight: 700;
-            color: #1d1d1f;
-            margin-bottom: 5px;
-            letter-spacing: -0.5px;
-        }
-        .sub-text {
-            font-size: 1rem;
-            color: #86868b;
-            margin-bottom: 60px;
-            font-weight: 400;
-        }
-
-        /* Professional Buttons */
-        .btn-select {
-            width: 100%;
-            max-width: 340px;
-            padding: 18px;
-            margin: 10px 0;
-            border-radius: 12px;
-            font-size: 1.05rem;
-            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 2px;
             cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 12px;
-            transition: all 0.2s ease;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-        }
-
-        /* Driver Button: Solid Professional Red */
-        .btn-driver {
-            background: #d32f2f; /* Corporate Red */
-            color: #ffffff;
-            border: none;
-        }
-        .btn-driver:active { transform: scale(0.98); background: #b71c1c; }
-
-        /* Student Button: Clean White with Border */
-        .btn-student {
-            background: #ffffff;
-            color: #1d1d1f;
-            border: 1px solid #d1d1d6;
-        }
-        .btn-student:active { transform: scale(0.98); background: #f2f2f7; }
-
-        /* =========================================
-           2. BUS SELECTION SCREEN (Modern Grid)
-        ========================================= */
-        #screen-selection { background: #f5f5f7; display: flex; flex-direction: column; }
-        
-        .selection-header { 
-            margin-top: 60px; 
-            margin-bottom: 25px; 
-            padding: 0 25px;
-            text-align: center; 
-        }
-        .selection-header h2 { 
-            color: #1d1d1f; 
-            font-size: 1.6rem; 
-            font-weight: 700; 
-            letter-spacing: -0.5px;
-        }
-        .selection-header p {
-            color: #86868b;
-            font-size: 0.95rem;
-            margin-top: 5px;
-        }
-
-        .bus-grid { 
-            display: grid; 
-            grid-template-columns: 1fr; /* Single column for better mobile view or 1fr 1fr for tablet */
-            gap: 20px; 
-            padding: 10px 25px 40px; 
-            overflow-y: auto; 
-        }
-        @media (min-width: 360px) { .bus-grid { grid-template-columns: 1fr 1fr; } }
-
-        /* BUS CARD DESIGN */
-        .bus-card { 
-            background: white; 
-            padding: 20px 15px; 
-            border-radius: 16px; 
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05); 
-            text-align: center; 
-            cursor: pointer; 
-            border: 1px solid transparent; 
-            transition: transform 0.2s, box-shadow 0.2s; 
+            box-shadow: 0 0 10px rgba(0, 243, 255, 0.2);
+            transition: all 0.3s;
+            clip-path: polygon(10% 0, 100% 0, 100% 70%, 90% 100%, 0 100%, 0 30%);
             position: relative;
             overflow: hidden;
         }
-        .bus-card::before {
-            content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%;
-            background: #d32f2f; /* Red Accent Line */
-            opacity: 0.8;
-        }
-        .bus-card:hover { 
-            transform: translateY(-3px); 
-            box-shadow: 0 10px 25px rgba(0,0,0,0.08); 
+        .btn-cyber:hover, .btn-cyber:active {
+            background: var(--neon-cyan);
+            color: #000;
+            box-shadow: 0 0 25px var(--neon-cyan);
         }
 
-        .bus-icon-lg { font-size: 2.2rem; margin-bottom: 12px; }
-
-        /* MATTE GOLD NAME PLATE */
-        .name-plate {
-            background: linear-gradient(180deg, #E8D5B5 0%, #CDB38B 100%); /* Matte Gold */
-            padding: 6px 10px;
-            border-radius: 4px;
-            margin: 0 auto 8px;
-            border: 1px solid #bfa87f;
-            display: inline-block;
-            width: 90%;
-            box-shadow: inset 0 1px 2px rgba(255,255,255,0.3);
+        /* BACK BUTTON */
+        .back-btn {
+            position: absolute; top: 20px; left: 20px; z-index: 1000;
+            background: rgba(0,0,0,0.6); border: 1px solid var(--neon-cyan);
+            color: var(--neon-cyan); width: 45px; height: 45px;
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            font-size: 1.2rem; cursor: pointer; backdrop-filter: blur(5px);
         }
-        .bus-card h3 { 
-            font-size: 0.85rem; 
-            color: #3e3832; /* Dark Brown/Black */
-            font-weight: 700; 
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            text-shadow: 0 1px 0 rgba(255,255,255,0.4); /* Engraved Effect */
-        }
-
-        .bus-card p { font-size: 0.75rem; color: #86868b; margin-top: 4px; font-weight: 500; }
 
         /* =========================================
-           3. DRIVER DASHBOARD (Dark Corporate)
+           1. WELCOME SPLASH SCREEN
         ========================================= */
-        #screen-driver { 
-            background: #1c1c1e; /* Deep Charcoal */
-            color: white; 
-            padding: 20px; 
-            align-items: center; 
-            justify-content: center; 
+        #screen-splash {
+            justify-content: center; align-items: center;
+            text-align: center;
+            background: radial-gradient(circle at center, #0a1f30 0%, #020b14 80%);
         }
-
-        .driver-header { position: absolute; top: 80px; text-align: center; width: 100%; }
-        .driver-sub { color: #86868b; font-size: 0.95rem; font-weight: 500; margin-bottom: 10px; }
         
-        .driver-plate-lg {
-            background: linear-gradient(180deg, #E8D5B5 0%, #CDB38B 100%);
-            padding: 10px 25px;
-            border-radius: 6px;
-            border: 1px solid #bfa87f;
-            display: inline-block;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        .splash-bus-art {
+            font-size: 6rem;
+            filter: drop-shadow(0 0 20px var(--neon-cyan));
+            animation: float 3s ease-in-out infinite;
+            margin-bottom: 20px;
         }
-        .selected-bus-name { 
-            color: #3e3832; 
-            font-size: 1.4rem; 
-            font-weight: 800; 
-            text-shadow: 0 1px 0 rgba(255,255,255,0.4);
-            text-transform: uppercase;
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
+
+        .app-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2.5rem;
+            font-weight: 900;
+            color: #fff;
+            text-shadow: 0 0 10px var(--neon-cyan), 0 0 20px var(--neon-cyan);
+            margin-bottom: 50px;
+            letter-spacing: 2px;
         }
 
-        /* Dark Center Card */
-        .status-card { 
-            background: #2c2c2e; 
-            padding: 40px 30px; 
-            border-radius: 20px; 
-            width: 100%; 
-            max-width: 360px; 
-            text-align: center; 
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2); 
-            border: 1px solid #3a3a3c;
+        /* =========================================
+           2. ROLE SELECTION (Split Screen)
+        ========================================= */
+        #screen-roles { flex-direction: column; }
+        
+        .role-half {
+            flex: 1;
+            display: flex; flex-direction: column;
+            justify-content: center; align-items: center;
+            transition: all 0.3s;
+            border-bottom: 1px solid var(--glass-border);
             position: relative;
         }
-
-        .driver-status-text {
-            font-size: 2rem;
-            font-weight: 700;
-            color: #86868b; /* Grey when offline */
-            margin-bottom: 5px;
-            letter-spacing: 1px;
-        }
-        .driver-status-sub { font-size: 0.85rem; color: #636366; text-transform: uppercase; letter-spacing: 1px; }
-
-        .divider-line {
-            height: 1px;
-            background: #d32f2f;
-            width: 40px;
-            margin: 25px auto;
-            opacity: 0.7;
-        }
-
-        .coord-display { 
-            font-family: 'Roboto Mono', monospace; 
-            font-size: 0.8rem; 
-            color: #30d158; /* iOS Green */
-            margin-top: 10px; 
-            background: rgba(0,0,0,0.2); 
-            padding: 12px; 
-            border-radius: 8px; 
-            text-align: center;
-        }
-
-        /* Action Buttons */
-        .btn-action { 
-            width: 100%; 
-            padding: 18px; 
-            border-radius: 12px; 
-            border: none; 
-            font-weight: 700; 
-            margin-top: 30px; 
-            cursor: pointer; 
-            font-size: 1.1rem; 
-            letter-spacing: 0.5px; 
-            transition: 0.2s; 
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
-        .btn-start { 
-            background: linear-gradient(135deg, #d32f2f, #b71c1c); 
-            color: white; 
-        }
-        .btn-start:active { transform: scale(0.98); }
+        .role-half:hover { background: rgba(0, 243, 255, 0.05); }
         
-        .btn-stop { 
-            background: #3a3a3c; 
-            color: #ff453a; 
-            border: 1px solid #ff453a; 
+        .role-icon { font-size: 3rem; margin-bottom: 15px; filter: drop-shadow(0 0 10px var(--neon-blue)); }
+        .role-label { font-family: 'Orbitron'; font-size: 1.5rem; color: #fff; letter-spacing: 2px; }
+
+        /* =========================================
+           3. BUS SELECTION (Cyber List)
+        ========================================= */
+        #screen-selection { padding: 20px; }
+        
+        .header-cyber {
+            margin-top: 60px; text-align: center; margin-bottom: 30px;
+            border-bottom: 2px solid var(--neon-cyan);
+            padding-bottom: 10px; display: inline-block; width: 100%;
+        }
+        .header-cyber h2 { font-family: 'Orbitron'; font-size: 1.4rem; color: var(--neon-cyan); letter-spacing: 1px; }
+
+        .bus-list-container {
+            display: flex; flex-direction: column; gap: 15px;
+            overflow-y: auto; padding-bottom: 80px;
+        }
+
+        .bus-card-tech {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--glass-border);
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            display: flex; justify-content: space-between; align-items: center;
+            border-radius: 4px; /* Techy sharp corners */
+            position: relative;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .bus-card-tech::before {
+            content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px;
+            background: var(--neon-cyan);
+            box-shadow: 0 0 10px var(--neon-cyan);
+        }
+        .bus-card-tech:hover {
+            transform: scale(1.02);
+            background: rgba(0, 243, 255, 0.1);
+        }
+        
+        .bus-info h3 { font-family: 'Orbitron'; font-size: 1.1rem; color: #fff; margin-bottom: 5px; }
+        .bus-info p { font-size: 0.9rem; color: #aaa; }
+        .live-tag {
+            font-size: 0.7rem; color: #00ff00; border: 1px solid #00ff00;
+            padding: 2px 6px; border-radius: 2px; text-transform: uppercase;
         }
 
         /* =========================================
-           4. STUDENT SCREEN (Map)
+           4. DRIVER GPS (Reactor Core)
         ========================================= */
-        #map { height: 100%; width: 100%; z-index: 1; }
+        #screen-driver { justify-content: center; align-items: center; background: #000; }
         
-        .distance-badge { 
-            position: absolute; top: 80px; right: 20px; 
-            background: white; padding: 12px 18px; 
-            border-radius: 12px; 
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1); 
-            z-index: 1000; 
-            display: flex; align-items: center; gap: 8px; 
-            font-weight: 600; color: #1d1d1f; 
+        .reactor-container {
+            position: relative; width: 200px; height: 200px;
+            display: flex; justify-content: center; align-items: center;
+            margin: 40px 0;
         }
-        .dist-icon { color: #d32f2f; }
-
-        .bottom-sheet { 
-            position: absolute; bottom: 0; left: 0; width: 100%; 
-            background: white; 
-            border-top-left-radius: 25px; border-top-right-radius: 25px; 
-            padding: 30px 25px; 
-            box-shadow: 0 -5px 30px rgba(0,0,0,0.1); 
-            z-index: 999; 
-            transform: translateY(110%); 
-            transition: transform 0.4s cubic-bezier(0.19, 1, 0.22, 1); 
-        }
-        .bottom-sheet.show { transform: translateY(0); }
         
-        .sheet-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 25px; }
-        .bus-title { font-size: 1.5rem; font-weight: 800; color: #1d1d1f; letter-spacing: -0.5px; }
-        .bus-route-name { font-size: 0.9rem; color: #86868b; font-weight: 500; }
+        .reactor-btn {
+            width: 140px; height: 140px;
+            border-radius: 50%;
+            background: radial-gradient(circle, #003333 0%, #000 100%);
+            border: 2px solid var(--neon-cyan);
+            color: var(--neon-cyan);
+            font-family: 'Orbitron'; font-weight: bold; font-size: 1.1rem;
+            cursor: pointer; z-index: 2;
+            box-shadow: 0 0 20px var(--neon-cyan), inset 0 0 20px var(--neon-cyan);
+            transition: 0.3s;
+        }
+        .reactor-btn.active {
+            background: var(--neon-cyan); color: #000;
+            box-shadow: 0 0 50px var(--neon-cyan);
+        }
+
+        .ripple {
+            position: absolute; width: 100%; height: 100%;
+            border: 1px solid var(--neon-cyan); border-radius: 50%;
+            opacity: 0;
+        }
+        .reactor-btn.active ~ .ripple { animation: rippleAnim 2s infinite; }
+        .reactor-btn.active ~ .ripple:nth-child(2) { animation-delay: 0.5s; }
         
-        .status-badge { 
-            padding: 6px 12px; border-radius: 6px; 
-            font-size: 0.75rem; font-weight: 700; 
-            text-transform: uppercase; letter-spacing: 0.5px; 
+        @keyframes rippleAnim {
+            0% { transform: scale(0.8); opacity: 1; }
+            100% { transform: scale(1.5); opacity: 0; }
         }
 
-        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-        .info-box { 
-            background: #f5f5f7; padding: 15px; 
-            border-radius: 12px; text-align: center; 
+        .driver-hud {
+            text-align: center; width: 80%;
+            border: 1px solid var(--glass-border);
+            padding: 20px; background: rgba(0,0,0,0.5);
         }
-        .info-value { font-size: 1.2rem; font-weight: 700; color: #1d1d1f; }
-        .info-label { font-size: 0.75rem; color: #86868b; margin-top: 5px; text-transform: uppercase; }
+        .hud-text { font-family: 'Courier New', monospace; color: var(--neon-cyan); margin-top: 10px; font-size: 0.8rem; }
 
-        /* Back Button */
-        .back-btn { 
-            position: absolute; top: 20px; left: 20px; z-index: 1000; 
-            background: white; width: 44px; height: 44px; 
-            border-radius: 12px; border: none; font-size: 1.2rem; 
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1); 
-            cursor: pointer; display: flex; align-items: center; justify-content: center; 
-            color: #1d1d1f; transition: 0.2s; 
+        /* =========================================
+           5. STUDENT MAP & NAV BAR
+        ========================================= */
+        #screen-student { background: #000; }
+        #map { height: calc(100% - 60px); width: 100%; z-index: 1; filter: contrast(1.2) grayscale(0.2); }
+
+        /* Floating Info Card */
+        .glass-panel {
+            position: absolute; bottom: 80px; left: 10px; right: 10px;
+            background: rgba(2, 11, 20, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--neon-cyan);
+            padding: 15px;
+            border-radius: 10px;
+            display: flex; justify-content: space-between;
+            z-index: 999;
+            box-shadow: 0 0 15px rgba(0, 243, 255, 0.2);
+            transform: translateY(150%); transition: transform 0.4s ease;
         }
-        .back-btn:active { transform: scale(0.95); background: #f2f2f7; }
+        .glass-panel.show { transform: translateY(0); }
+        .panel-data div { font-size: 0.8rem; color: #888; text-transform: uppercase; }
+        .panel-data span { font-size: 1.2rem; font-family: 'Orbitron'; color: #fff; }
 
-        /* Map Markers */
-        .bus-icon-marker { font-size: 40px; text-align: center; line-height: 1; filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.3)); }
-        .user-icon-marker { width: 18px; height: 18px; background: #007aff; border: 3px solid white; border-radius: 50%; box-shadow: 0 2px 6px rgba(0,0,0,0.2); }
+        /* Bottom Navigation Bar */
+        .bottom-nav {
+            position: absolute; bottom: 0; left: 0; width: 100%; height: 65px;
+            background: #020b14;
+            border-top: 1px solid var(--neon-cyan);
+            display: flex; justify-content: space-around; align-items: center;
+            z-index: 1000;
+        }
+        .nav-item {
+            display: flex; flex-direction: column; align-items: center;
+            color: #555; font-size: 0.7rem; cursor: pointer;
+        }
+        .nav-item.active { color: var(--neon-cyan); text-shadow: 0 0 5px var(--neon-cyan); }
+        .nav-icon { font-size: 1.2rem; margin-bottom: 3px; }
+
+        /* Custom Markers */
+        .marker-pin-bus { font-size: 30px; filter: drop-shadow(0 0 10px var(--neon-cyan)); }
+        .marker-pin-user { width: 15px; height: 15px; background: var(--neon-blue); border-radius: 50%; box-shadow: 0 0 10px var(--neon-blue); border: 2px solid white; }
+
     </style>
 </head>
 <body>
 
-    <!-- SCREEN 1: HOME (Corporate Style) -->
-    <div id="screen-home" class="full-screen">
-        <div class="home-icon-container">
-            <div class="logo-text">🚌</div>
-        </div>
-        <div class="app-title">College Bus Tracker</div>
-        <p class="sub-text">Enterprise Location System</p>
-        
-        <button class="btn-select btn-driver" id="select-driver-mode">
-            <span>👮‍♂️</span> I am the Driver
-        </button>
-        <button class="btn-select btn-student" id="select-student-mode">
-            <span>🎓</span> I am a Student
-        </button>
+    <!-- SCREEN 1: SPLASH -->
+    <div id="screen-splash" class="full-screen">
+        <div class="splash-bus-art">🚌</div>
+        <div class="app-title">CAMPUS RIDE<br><span style="font-size: 1rem; font-weight: 300; opacity: 0.8;">FUTURE LINK SYSTEM</span></div>
+        <button class="btn-cyber" onclick="showScreen('roles')">GET STARTED</button>
     </div>
 
-    <!-- SCREEN 2: BUS SELECTION (Grid with Golden Plates) -->
+    <!-- SCREEN 2: ROLE SELECTION -->
+    <div id="screen-roles" class="full-screen hidden">
+        <div class="role-half" onclick="selectRole('driver')">
+            <div class="role-icon">🏎️</div> <!-- Steering Wheel Rep -->
+            <div class="role-label">DRIVER</div>
+        </div>
+        <div class="role-half" style="border-bottom: none;" onclick="selectRole('student')">
+            <div class="role-icon">🎓</div>
+            <div class="role-label">STUDENT</div>
+        </div>
+    </div>
+
+    <!-- SCREEN 3: BUS LIST (Shared Design) -->
     <div id="screen-selection" class="full-screen hidden">
-        <button class="back-btn" onclick="goHome()">&#8592;</button>
-        <div class="selection-header">
-            <h2>Select Your Bus</h2>
-            <p>Choose your bus to track or drive</p>
+        <button class="back-btn" onclick="goBack()">&#8592;</button>
+        <div class="header-cyber">
+            <h2 id="selection-title">COMMAND CENTER</h2>
         </div>
-        <div class="bus-grid" id="bus-grid-container">
-            <!-- Grid generated by JS -->
+        <div class="bus-list-container" id="bus-grid-container">
+            <!-- JS Injected Cards -->
         </div>
     </div>
 
-    <!-- SCREEN 3: DRIVER DASHBOARD (Dark Mode Professional) -->
+    <!-- SCREEN 4: DRIVER DASHBOARD (Reactor) -->
     <div id="screen-driver" class="full-screen hidden">
-        <button class="back-btn" onclick="goSelection()">&#8592;</button>
+        <button class="back-btn" onclick="showScreen('selection')">&#8592;</button>
         
-        <div class="driver-header">
-            <p class="driver-sub">You are driving</p>
-            <div class="driver-plate-lg">
-                <div id="driver-bus-name" class="selected-bus-name">BUS NAME</div>
-            </div>
+        <h2 style="font-family: 'Orbitron'; color: #fff; margin-bottom: 10px;" id="driver-bus-name">TITAN-X</h2>
+        <p style="color: var(--neon-cyan);">SYSTEM: STANDBY</p>
+
+        <div class="reactor-container">
+            <div class="ripple"></div>
+            <div class="ripple"></div>
+            <button id="btn-toggle-gps" class="reactor-btn">GO LIVE</button>
         </div>
 
-        <div class="status-card">
-            <h2 id="driver-status" class="driver-status-text">OFFLINE</h2>
-            <p class="driver-status-sub">GPS Tracking System</p>
-            
-            <div class="divider-line"></div>
-            
-            <div class="coord-display" id="debug-coords">
-                System ready to start
+        <div class="driver-hud">
+            <div style="display: flex; justify-content: space-between;">
+                <span>GPS SIGNAL</span>
+                <span style="color: #00ff00;">STRONG</span>
             </div>
-
-            <button id="btn-start" class="btn-action btn-start">START SHARING</button>
-            <button id="btn-stop" class="btn-action btn-stop hidden">STOP SHARING</button>
+            <div class="hud-text" id="debug-coords">
+                WAITING FOR ACTIVATION...
+            </div>
         </div>
     </div>
 
-    <!-- SCREEN 4: STUDENT MAP (Clean UI) -->
+    <!-- SCREEN 5: STUDENT MAP & NAV -->
     <div id="screen-student" class="full-screen hidden">
-        <button class="back-btn" onclick="goSelection()">&#8592;</button>
-        
-        <!-- Distance Float -->
-        <div class="distance-badge hidden" id="distance-badge">
-            <span class="dist-icon">📍</span>
-            <span id="dist-val">0 km</span> away
+        <!-- Floating Stats -->
+        <div class="glass-panel" id="student-info-panel">
+            <div class="panel-data">
+                <div>SPEED</div>
+                <span id="disp-speed">0 KM/H</span>
+            </div>
+            <div class="panel-data" style="text-align: right;">
+                <div>LAST UPDATE</div>
+                <span id="disp-time">--:--</span>
+            </div>
         </div>
 
+        <!-- Dark Map -->
         <div id="map"></div>
 
-        <!-- Bottom Sheet -->
-        <div class="bottom-sheet" id="student-sheet">
-            <div class="sheet-header">
-                <div>
-                    <div class="bus-title" id="sheet-bus-name">Bus Name</div>
-                    <div class="bus-route-name" id="sheet-bus-route">Route Info</div>
-                </div>
-                <div class="status-badge" id="live-badge">OFFLINE</div>
+        <!-- 5-Icon Nav Bar -->
+        <div class="bottom-nav">
+            <div class="nav-item" onclick="showScreen('selection')">
+                <span class="nav-icon">🏠</span> HOME
             </div>
-            <div class="info-grid">
-                <div class="info-box">
-                    <div class="info-value" id="disp-speed">0 km/h</div>
-                    <div class="info-label">Speed</div>
-                </div>
-                <div class="info-box">
-                    <div class="info-value" id="disp-time">--:--</div>
-                    <div class="info-label">Last Update</div>
-                </div>
+            <div class="nav-item active">
+                <span class="nav-icon">🗺️</span> MAP
+            </div>
+            <div class="nav-item">
+                <span class="nav-icon">📍</span> ROUTE
+            </div>
+            <div class="nav-item">
+                <span class="nav-icon">👤</span> PROFILE
+            </div>
+            <div class="nav-item">
+                <span class="nav-icon">⚠️</span> ALERTS
             </div>
         </div>
     </div>
@@ -425,13 +357,12 @@
     <!-- Leaflet JS -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 
-    <!-- FIREBASE MODULE & APP LOGIC -->
+    <!-- FIREBASE & LOGIC -->
     <script type="module">
-        // 1. Import Firebase
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getDatabase, ref, set, onValue, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-        // 2. Configuration
+        // CONFIG
         const firebaseConfig = {
             apiKey: "AIzaSyB2PG5JvDko2UmQDlY9gN5lBgga2vQy-Ws",
             authDomain: "conceptra-c1000.firebaseapp.com",
@@ -446,80 +377,67 @@
         const app = initializeApp(firebaseConfig);
         const database = getDatabase(app);
 
-        // --- BUS DATA (Updated to User Request) ---
+        // --- NEW BUS DATA (Futuristic Names) ---
         const BUS_DATA = [
-            { id: 'bus1', name: 'THUNDERBOLT', route: 'North Campus Route' },
-            { id: 'bus2', name: 'FALCON', route: 'South City Express' },
-            { id: 'bus3', name: 'GUARDIAN', route: 'West End Shuttle' },
-            { id: 'bus4', name: 'VOYAGER', route: 'Central Station Line' },
-            { id: 'bus5', name: 'TORNADO', route: 'Highway Express' },
-            { id: 'bus6', name: 'TITAN', route: 'Old City Connect' },
-            { id: 'bus7', name: 'PHOENIX', route: 'Riverside Corridor' }
+            { id: 'bus1', name: 'TITAN-X', route: 'Sector 7 Alpha' },
+            { id: 'bus2', name: 'THUNDERBOLT', route: 'Skyway Express' },
+            { id: 'bus3', name: 'VOYAGER-01', route: 'Central Hub' },
+            { id: 'bus4', name: 'FALCON-GT', route: 'West Wing' },
+            { id: 'bus5', name: 'OMEGA-PRIME', route: 'Highway Grid' },
+            { id: 'bus6', name: 'SOLARIS', route: 'Old City Link' },
+            { id: 'bus7', name: 'IRON-CLAD', route: 'Hostel Zone' }
         ];
 
-        // --- STATE MANAGEMENT ---
-        let currentMode = null; // 'driver' or 'student'
-        let selectedBus = null; // Stores the selected bus object
-        let watchId = null;     // Driver GPS ID
-        let userWatchId = null; // Student GPS ID
-        let map = null;         // Leaflet Map
-        let busMarker = null;   // Bus Marker
-        let userMarker = null;  // Student Marker
-        let routeLine = null;   // Line between student and bus
+        // --- STATE ---
+        let currentMode = null;
+        let selectedBus = null;
+        let watchId = null;
+        let map = null;
+        let busMarker = null;
+        let routeLine = null;
+        let isDriving = false;
 
         // --- DOM ELEMENTS ---
         const screens = {
-            home: document.getElementById('screen-home'),
-            select: document.getElementById('screen-selection'),
+            splash: document.getElementById('screen-splash'),
+            roles: document.getElementById('screen-roles'),
+            selection: document.getElementById('screen-selection'),
             driver: document.getElementById('screen-driver'),
             student: document.getElementById('screen-student')
         };
 
-        // --- NAVIGATION LOGIC ---
-        document.getElementById('select-driver-mode').addEventListener('click', () => {
-            currentMode = 'driver';
-            showScreen('select');
-            renderBusGrid();
-        });
-
-        document.getElementById('select-student-mode').addEventListener('click', () => {
-            currentMode = 'student';
-            showScreen('select');
-            renderBusGrid();
-        });
-
-        // Global functions for HTML onclicks
-        window.goHome = function() {
-            showScreen('home');
-            stopDriverSharing(); // Safety stop
-        };
-
-        window.goSelection = function() {
-            showScreen('select');
-            stopDriverSharing();
-            stopStudentTracking();
-        };
-
-        function showScreen(screenName) {
+        // --- NAVIGATION ---
+        window.showScreen = function(name) {
             Object.values(screens).forEach(s => s.classList.add('hidden'));
-            screens[screenName].classList.remove('hidden');
-        }
+            screens[name].classList.remove('hidden');
+        };
 
-        // --- RENDER BUS GRID (Updated for Golden Plate Design) ---
-        function renderBusGrid() {
+        window.selectRole = function(role) {
+            currentMode = role;
+            document.getElementById('selection-title').innerText = role === 'driver' ? 'DRIVER CONSOLE' : 'AVAILABLE UNITS';
+            renderBusList();
+            showScreen('selection');
+        };
+
+        window.goBack = function() {
+            if(currentMode) showScreen('roles');
+            else showScreen('splash');
+        };
+
+        // --- RENDER BUS LIST (Futuristic Cards) ---
+        function renderBusList() {
             const container = document.getElementById('bus-grid-container');
             container.innerHTML = '';
             
             BUS_DATA.forEach(bus => {
                 const card = document.createElement('div');
-                card.className = 'bus-card';
-                // Flat bus illustration + Gold Plate
+                card.className = 'bus-card-tech';
                 card.innerHTML = `
-                    <div class="bus-icon-lg">🚌</div>
-                    <div class="name-plate">
+                    <div class="bus-info">
                         <h3>${bus.name}</h3>
+                        <p>${bus.route}</p>
                     </div>
-                    <p>${bus.route}</p>
+                    ${currentMode === 'student' ? '<span class="live-tag">STATUS: LIVE</span>' : '<span style="color:var(--neon-cyan)">SELECT ></span>'}
                 `;
                 card.onclick = () => selectBus(bus);
                 container.appendChild(card);
@@ -536,199 +454,101 @@
         }
 
         // ===========================================
-        // 👮‍♂️ DRIVER LOGIC
+        // 👮‍♂️ DRIVER LOGIC (Reactor Button)
         // ===========================================
-        const btnStart = document.getElementById('btn-start');
-        const btnStop = document.getElementById('btn-stop');
-        const statusText = document.getElementById('driver-status');
-        const debugCoords = document.getElementById('debug-coords');
-        const driverBusName = document.getElementById('driver-bus-name');
-
         function initDriverScreen() {
             showScreen('driver');
-            driverBusName.innerText = selectedBus.name;
-            // Reset UI
-            btnStart.classList.remove('hidden');
-            btnStop.classList.add('hidden');
-            statusText.innerText = "OFFLINE";
-            statusText.style.color = "#86868b";
-            debugCoords.innerText = "System ready to start";
-            debugCoords.style.color = "#86868b";
+            document.getElementById('driver-bus-name').innerText = selectedBus.name;
+            resetDriverUI();
         }
 
-        btnStart.addEventListener('click', () => {
-            if (!navigator.geolocation) return alert("GPS not supported");
+        const btnToggle = document.getElementById('btn-toggle-gps');
+        const debugCoords = document.getElementById('debug-coords');
 
-            btnStart.classList.add('hidden');
-            btnStop.classList.remove('hidden');
-            statusText.innerText = "ONLINE";
-            statusText.style.color = "#30d158"; // Green
-            debugCoords.innerText = "Connecting to satellites...";
-            debugCoords.style.color = "#30d158";
+        function resetDriverUI() {
+            isDriving = false;
+            if(watchId) navigator.geolocation.clearWatch(watchId);
+            btnToggle.classList.remove('active');
+            btnToggle.innerText = "GO LIVE";
+            debugCoords.innerText = "WAITING FOR ACTIVATION...";
+        }
 
-            const options = { enableHighAccuracy: true, timeout: 60000, maximumAge: 5000 };
-            
-            watchId = navigator.geolocation.watchPosition(
-                (pos) => {
+        btnToggle.addEventListener('click', () => {
+            if (!isDriving) {
+                // START
+                if (!navigator.geolocation) return alert("GPS System Failure");
+                
+                isDriving = true;
+                btnToggle.classList.add('active');
+                btnToggle.innerText = "STOP";
+                debugCoords.innerText = "INITIALIZING UPLINK...";
+                debugCoords.style.color = "#00ff00";
+
+                watchId = navigator.geolocation.watchPosition(pos => {
                     const { latitude: lat, longitude: lng, speed } = pos.coords;
                     const spd = speed ? (speed * 3.6).toFixed(1) : 0;
                     const time = new Date().toLocaleTimeString();
 
-                    debugCoords.innerHTML = `LAT: ${lat.toFixed(5)} | LNG: ${lng.toFixed(5)}`;
+                    debugCoords.innerHTML = `LAT: ${lat.toFixed(4)} <br> LNG: ${lng.toFixed(4)} <br> V: ${spd} KM/H`;
 
-                    // Update Firebase
                     set(ref(database, 'buses/' + selectedBus.id), {
-                        lat, lng, speed: spd, lastUpdated: time, active: true, name: selectedBus.name, route: selectedBus.route
+                        lat, lng, speed: spd, lastUpdated: time, active: true, 
+                        name: selectedBus.name, route: selectedBus.route
                     });
-                },
-                (err) => console.error("GPS Error", err),
-                options
-            );
+                }, err => console.error(err), { enableHighAccuracy: true });
+
+            } else {
+                // STOP
+                resetDriverUI();
+                set(ref(database, 'buses/' + selectedBus.id + '/active'), false);
+                debugCoords.innerText = "LINK TERMINATED";
+                debugCoords.style.color = "var(--neon-cyan)";
+            }
         });
 
-        btnStop.addEventListener('click', stopDriverSharing);
-
-        function stopDriverSharing() {
-            if (watchId) {
-                navigator.geolocation.clearWatch(watchId);
-                watchId = null;
-            }
-            if (selectedBus) {
-                set(ref(database, 'buses/' + selectedBus.id + '/active'), false);
-            }
-            if (currentMode === 'driver') {
-                btnStart.classList.remove('hidden');
-                btnStop.classList.add('hidden');
-                statusText.innerText = "OFFLINE";
-                statusText.style.color = "#86868b";
-                debugCoords.innerText = "Tracking Stopped";
-                debugCoords.style.color = "#86868b";
-            }
-        }
-
         // ===========================================
-        // 🎓 STUDENT LOGIC
+        // 🎓 STUDENT LOGIC (Dark Map + Nav)
         // ===========================================
         function initStudentScreen() {
             showScreen('student');
             
-            // Map Cleanup & Init
             if (map) { map.remove(); map = null; }
+            // Dark Mode Map Tiles
             map = L.map('map', { zoomControl: false }).setView([20.5937, 78.9629], 5);
-            
-            L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-                attribution: '&copy; OpenStreetMap &copy; CARTO',
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+                attribution: '&copy; CARTO',
                 maxZoom: 19
             }).addTo(map);
 
-            busMarker = null;
-            userMarker = null;
-            routeLine = null;
+            busMarker = null; routeLine = null;
 
-            document.getElementById('sheet-bus-name').innerText = selectedBus.name;
-            document.getElementById('sheet-bus-route').innerText = selectedBus.route;
-
-            // 1. Watch Student Location
-            if (navigator.geolocation) {
-                userWatchId = navigator.geolocation.watchPosition((pos) => {
-                    const lat = pos.coords.latitude;
-                    const lng = pos.coords.longitude;
-                    updateStudentLocation(lat, lng);
-                }, (err) => console.log("User GPS Error"), { enableHighAccuracy: true });
-            }
-
-            // 2. Watch Bus Location (Firebase)
+            // Watch Bus Data
             const busRef = ref(database, 'buses/' + selectedBus.id);
             onValue(busRef, (snapshot) => {
                 const data = snapshot.val();
-                updateBusOnMap(data);
+                updateMapDisplay(data);
             });
         }
 
-        function stopStudentTracking() {
-            if (userWatchId) navigator.geolocation.clearWatch(userWatchId);
-        }
-
-        // Update Student Marker
-        let studentLat = null, studentLng = null;
-        function updateStudentLocation(lat, lng) {
-            studentLat = lat;
-            studentLng = lng;
-
-            if (!userMarker) {
-                const userIcon = L.divIcon({ className: 'user-icon-marker', iconSize: [18, 18] });
-                userMarker = L.marker([lat, lng], { icon: userIcon }).addTo(map);
-                map.setView([lat, lng], 15);
-            } else {
-                userMarker.setLatLng([lat, lng]);
-            }
-            drawRouteLine();
-        }
-
-        // Update Bus Marker & Info Sheet
-        let busLat = null, busLng = null;
-        function updateBusOnMap(data) {
-            const sheet = document.getElementById('student-sheet');
-            const badge = document.getElementById('live-badge');
+        function updateMapDisplay(data) {
+            const panel = document.getElementById('student-info-panel');
             
             if (data && data.active) {
-                busLat = data.lat;
-                busLng = data.lng;
-
-                sheet.classList.add('show');
-                document.getElementById('disp-speed').innerText = Math.round(data.speed) + " km/h";
+                panel.classList.add('show');
+                document.getElementById('disp-speed').innerText = Math.round(data.speed) + " KM/H";
                 document.getElementById('disp-time').innerText = data.lastUpdated;
-                badge.innerText = "LIVE";
-                badge.style.background = "#e8f5e9"; badge.style.color = "#2e7d32";
 
-                const busIcon = L.divIcon({
-                    className: 'bus-icon-marker', html: '🚌', iconSize: [40, 40], iconAnchor: [20, 20]
-                });
+                const busIcon = L.divIcon({ className: 'marker-pin-bus', html: '🚌', iconSize: [40, 40] });
 
-                if (busMarker) {
-                    busMarker.setLatLng([data.lat, data.lng]);
-                } else {
-                    busMarker = L.marker([data.lat, data.lng], { icon: busIcon }).addTo(map);
-                }
+                if (busMarker) busMarker.setLatLng([data.lat, data.lng]);
+                else busMarker = L.marker([data.lat, data.lng], { icon: busIcon }).addTo(map);
 
-                drawRouteLine();
+                map.setView([data.lat, data.lng], 15);
             } else {
-                badge.innerText = "OFFLINE";
-                badge.style.background = "#ffebee"; badge.style.color = "#c62828";
-                document.getElementById('disp-speed').innerText = "--";
-                document.getElementById('distance-badge').classList.add('hidden');
-                
-                if (busMarker) map.removeLayer(busMarker);
-                if (routeLine) map.removeLayer(routeLine);
-                busMarker = null; 
-                routeLine = null;
-                busLat = null;
+                panel.classList.remove('show');
             }
         }
 
-        // Draw Line & Calc Distance
-        function drawRouteLine() {
-            if (studentLat && busLat && busMarker && userMarker) {
-                const latlngs = [[studentLat, studentLng], [busLat, busLng]];
-
-                // Create or Update Line
-                if (routeLine) {
-                    routeLine.setLatLngs(latlngs);
-                } else {
-                    routeLine = L.polyline(latlngs, { color: '#d32f2f', weight: 4, opacity: 0.8 }).addTo(map);
-                }
-
-                // Fit bounds to show both
-                map.fitBounds(L.latLngBounds(latlngs), { padding: [50, 50] });
-
-                // Calculate Distance
-                const distKm = (map.distance([studentLat, studentLng], [busLat, busLng]) / 1000).toFixed(1);
-                
-                const distBadge = document.getElementById('distance-badge');
-                distBadge.classList.remove('hidden');
-                document.getElementById('dist-val').innerText = distKm + " km";
-            }
-        }
     </script>
 </body>
 </html>

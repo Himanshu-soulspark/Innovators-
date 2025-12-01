@@ -24,6 +24,7 @@
                         "neon-cyan": "#00f3ff",
                         "neon-red": "#ff003c",
                         "neon-green": "#00ff66",
+                        "neon-blue": "#0088ff",
                     },
                     fontFamily: {
                         sans: ['Space Grotesk', 'sans-serif'],
@@ -81,6 +82,7 @@
             --neon-cyan: #00f3ff;
             --neon-red: #ff003c;
             --neon-green: #00ff66;
+            --neon-blue: #0088ff;
             --bg-dark: #050505;
             --taxi-yellow: #FACC15;
         }
@@ -250,7 +252,7 @@
         }
         .nav-item.active { color: var(--neon-cyan); text-shadow: 0 0 5px var(--neon-cyan); }
         
-        /* === CUSTOM MAP MARKERS (RED BUS / GREEN STUDENT) === */
+        /* === CUSTOM MAP MARKERS === */
         
         /* BUS MARKER (RED DOT) */
         .bus-marker-wrapper {
@@ -274,6 +276,22 @@
             border-bottom: 12px solid #ff003c; transform: translateY(-5px);
         }
         
+        /* GHOST BUS MARKER (BLUE) - For Crowd Tracking */
+        .ghost-bus-wrapper {
+            position: relative; width: 40px; height: 40px;
+            display: flex; justify-content: center; align-items: center;
+        }
+        .blue-dot-core {
+            width: 16px; height: 16px; background: #0088ff;
+            border-radius: 50%; box-shadow: 0 0 15px #0088ff, inset 0 0 5px white;
+            position: relative; z-index: 2; border: 2px solid white;
+        }
+        .blue-pulse-ring {
+            position: absolute; width: 100%; height: 100%;
+            border-radius: 50%; border: 1px solid #0088ff;
+            opacity: 0; animation: pulse-ring 2s infinite;
+        }
+
         /* STUDENT MARKER (GREEN DOT) */
         .student-marker-core {
             width: 14px; height: 14px; background: #00ff66;
@@ -292,31 +310,24 @@
 
         .marker-pin-station { font-size: 28px; filter: drop-shadow(0 0 10px #ff00ea); text-align: center; color: #ff00ea; }
 
-        /* TOGGLE BUTTON */
-        .map-toggle-btn {
-            position: absolute; top: 20px; right: 20px; z-index: 1000;
-            background: rgba(0,0,0,0.7); border: 1px solid white;
-            color: white; padding: 8px; border-radius: 50%;
+        /* TOGGLE BUTTONS (MAP & PASSENGER) */
+        .map-control-btn {
+            position: absolute; width: 40px; height: 40px; z-index: 1000;
+            background: rgba(0,0,0,0.7); border: 1px solid var(--neon-cyan);
+            color: var(--neon-cyan); border-radius: 50%; display: flex;
+            align-items: center; justify-content: center;
             cursor: pointer; backdrop-filter: blur(5px);
+            transition: all 0.3s;
         }
-        .map-toggle-btn.light { background: white; color: black; border-color: black; }
-
-        /* STUDENT ON BUS BUTTON (LEFT) */
-        .on-bus-btn {
-            position: absolute; top: 50%; left: 10px; transform: translateY(-50%); z-index: 1000;
-            width: 50px; height: 50px; background: rgba(0,0,0,0.8);
-            border: 1px solid #555; border-radius: 12px;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            color: #888; transition: all 0.3s ease; backdrop-filter: blur(5px);
-            cursor: pointer;
-        }
-        .on-bus-btn.active {
-            border-color: var(--neon-green); color: var(--neon-green);
-            background: rgba(0, 255, 102, 0.1);
-            box-shadow: 0 0 15px rgba(0, 255, 102, 0.3);
-        }
-        .on-bus-btn span { font-size: 24px; }
-        .on-bus-btn p { font-size: 8px; margin-top: 2px; text-align: center; line-height: 1; font-weight: bold; }
+        
+        /* Light/Dark Toggle (Top Right) */
+        #toggle-map-btn { top: 20px; right: 20px; border-color: white; color: white; }
+        #toggle-map-btn.light { background: white; color: black; border-color: black; }
+        
+        /* "I'm On Bus" Button (Left Side) */
+        #btn-passenger-mode { top: 50%; left: 10px; transform: translateY(-50%); border-radius: 10px; height: auto; padding: 10px 5px; flex-direction: column; gap: 5px; }
+        #btn-passenger-mode.active { background: var(--neon-green); color: black; border-color: var(--neon-green); box-shadow: 0 0 15px var(--neon-green); }
+        #btn-passenger-mode span.text-xs { font-size: 9px; text-align: center; line-height: 1; font-weight: bold; }
 
         /* MODAL OVERLAY */
         .modal-overlay {
@@ -478,13 +489,12 @@
     <!-- SCREEN 4: DRIVER DASHBOARD (ULTIMATE REDESIGN) -->
     <div id="screen-driver" class="full-screen hidden font-display">
         
+        <!-- Background Video (THE HACK) - Must be enabled by user gesture -->
+        <video id="background-video" loop playsinline style="width: 1px; height: 1px; opacity: 0; position: absolute; pointer-events: none;"></video>
+
         <!-- Background Effects -->
         <div class="tactical-grid"></div>
         <div class="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-black to-transparent z-0"></div>
-
-        <!-- HIDDEN VIDEO HACK FOR BACKGROUND TRACKING -->
-        <canvas id="dummy-canvas" width="1" height="1" style="display:none"></canvas>
-        <video id="background-video" loop muted playsinline style="width: 1px; height: 1px; opacity: 0; pointer-events: none; position: absolute; z-index: 0;"></video>
 
         <!-- Header -->
         <div class="relative z-20 flex justify-between items-center p-6 w-full">
@@ -508,7 +518,7 @@
                 <div class="absolute inset-4 rounded-full border border-dashed border-white/20 animate-spin-slow"></div>
                 <div class="absolute inset-0 rounded-full border-2 border-transparent border-t-primary/50 animate-pulse"></div>
                 
-                <!-- The Radar Sweep Effect (Visible only via CSS) -->
+                <!-- The Radar Sweep Effect -->
                 <div class="radar-sweep"></div>
                 
                 <!-- Speed Display in Center -->
@@ -566,14 +576,14 @@
     <div id="screen-student" class="full-screen hidden">
         
         <!-- Toggle Map Theme -->
-        <button id="toggle-map-btn" class="map-toggle-btn" onclick="toggleMapTheme()">
+        <button id="toggle-map-btn" class="map-control-btn" onclick="toggleMapTheme()">
             <span class="material-symbols-outlined">light_mode</span>
         </button>
 
-        <!-- ON BUS BUTTON (LEFT SIDE) -->
-        <button id="btn-on-bus" class="on-bus-btn" onclick="toggleOnBusStatus()">
-            <span class="material-symbols-outlined">fingerprint</span>
-            <p>I'M ON<br>BUS</p>
+        <!-- STUDENT "I'M ON BUS" BUTTON -->
+        <button id="btn-passenger-mode" class="map-control-btn" onclick="togglePassengerMode()">
+            <span class="material-symbols-outlined">directions_bus</span>
+            <span class="text-xs">I'M ON<br>BUS</span>
         </button>
 
         <div class="glass-panel-map" id="student-info-panel">
@@ -586,8 +596,8 @@
                 <span style="font-family:'Orbitron'; font-size:1.2rem; color: var(--neon-cyan);" id="disp-eta">-- MIN</span>
             </div>
             <div class="panel-data" style="text-align: right;">
-                <div style="color:#888; font-size:0.8rem;">STATUS</div>
-                <span style="font-family:'Orbitron'; font-size:0.8rem;" id="disp-status">CONNECTING</span>
+                <div style="color:#888; font-size:0.8rem;">LAST UPDATE</div>
+                <span style="font-family:'Orbitron'; font-size:1.2rem;" id="disp-time">--:--</span>
             </div>
         </div>
 
@@ -712,8 +722,7 @@
         let studentWatchId = null;
         let studentPos = null;
         let routePolyline = null;
-        let wakeLock = null;
-        let isOnBus = false;
+        let isPassengerMode = false;
 
         // Navigation
         const screens = {
@@ -796,17 +805,10 @@
             else initStudentScreen();
         }
 
-        // --- DRIVER LOGIC & WAKE LOCK & VIDEO HACK ---
-        async function requestWakeLock() {
-            try {
-                if ('wakeLock' in navigator) {
-                    wakeLock = await navigator.wakeLock.request('screen');
-                    console.log('Wake Lock active');
-                }
-            } catch (err) {
-                console.error(`${err.name}, ${err.message}`);
-            }
-        }
+        // --- DRIVER LOGIC & VIDEO HACK ---
+        
+        // Blank Video Base64 (1x1 pixel black)
+        const BLANK_VIDEO = "data:video/mp4;base64,AAAAHGZ0eXBpc29tAAACAGlzb21pc28yYXZjMQAAAAhmcmVlAAAGF21kYXQAAAKABQb//5/4ACZcAAAAJ2B0cmFrAAAAXHRraGQAAAAHAAAAAQAAAAABAAAAAAABAAAAAAAAAAAAAAABAAAAAAH0ZWR0cwAAACxlbHN0AAAAAAAAAAEAAAABAAAAAAABAAAAAAABAAAAAAABAAAAAAABAAAAAAWKbWRpYQAAACBtZGhkwV7m+MFe5vgAAAAAAAEAAAAAAAEAAAAAAAABK2hkbHIAAAAAAAAAAHZpZGUAAAAAAAAAAAAAAABWaWRlb0hhbmRsZXQAAAAAQ21pbmYAAAAUdm1oZAAAAAEAAAAAAAAAAAAAACRkaW5mAAAAHGRyZWYAAAAAAAAAAQAAAAx1cmwgAAAAAQAAAChzdGJsAAAAJ3N0c2QAAAAAAAAAAQAAABdhdmMxAAAAAAAAAAEAAQAAAAABAAEAAAAgbXBwYQAAAAAAAAAAAAEAAAABAAAAAQEAAAABAAAAAHRzdHRzAAAAAAAAAAEAAAABAAAAAQAAABxzdHNjAAAAAAAAAAEAAAABAAAAAQAAAAEAAAAcc3RzegAAAAAAAAAAAAAAAQAAABRzdGNvAAAAAAAAAAEAAA4AAAAGdWR0YQAAABRtZXRhAAAAAAAAACFoZGxyAAAAAAAAAABtZGlyYXBwbAAAAAAAAAAAAAAA";
 
         function initDriverScreen() {
             showScreen('driver');
@@ -822,11 +824,9 @@
                     openStationList();
                 }, 800);
             });
-
             stnBtn.addEventListener('touchend', (e) => {
                 clearTimeout(pressTimer);
             });
-            
             stnBtn.addEventListener('mousedown', () => {
                 pressTimer = setTimeout(() => {
                     openStationList();
@@ -835,7 +835,6 @@
             stnBtn.addEventListener('mouseup', () => {
                 clearTimeout(pressTimer);
             });
-            
             stnBtn.onclick = () => {
                 if(!isDriving) return alert("Please Activate Sequence First");
                 if(pressTimer) clearTimeout(pressTimer); 
@@ -854,14 +853,6 @@
             isDriving = false;
             currentPos = null;
             if(watchId) navigator.geolocation.clearWatch(watchId);
-            if(wakeLock) wakeLock.release().then(() => wakeLock = null);
-            
-            // Stop Video
-            if(bgVideo) {
-                bgVideo.pause();
-                if (document.pictureInPictureElement) document.exitPictureInPicture();
-            }
-
             btnToggle.classList.remove('active');
             
             btnToggle.innerHTML = `
@@ -879,6 +870,10 @@
             if(statusText) statusText.innerText = "DISCONNECTED";
             
             stationBtn.classList.add('opacity-50', 'pointer-events-none');
+            
+            // Stop Video
+            bgVideo.pause();
+            if(document.pictureInPictureElement) document.exitPictureInPicture();
         }
 
         btnToggle.addEventListener('click', async () => {
@@ -886,25 +881,22 @@
                 // START DRIVING
                 if (!navigator.geolocation) return alert("GPS System Failure");
                 
-                // 1. Request Wake Lock
-                await requestWakeLock();
-
-                // 2. Start Background Video Hack (PiP)
-                try {
-                    const canvas = document.getElementById('dummy-canvas');
-                    const stream = canvas.captureStream(30);
-                    bgVideo.srcObject = stream;
-                    await bgVideo.play();
-                    // Attempt PiP - User must not close this window
-                    if (document.pictureInPictureEnabled) {
-                        bgVideo.requestPictureInPicture().catch(e => console.log("PiP failed: " + e));
-                    }
-                } catch(e) { console.log("Video hack error:", e); }
-
                 isDriving = true;
                 btnToggle.classList.add('active');
                 stationBtn.classList.remove('opacity-50', 'pointer-events-none');
                 
+                // --- THE HACK: Play Video & Request PiP ---
+                try {
+                    bgVideo.src = BLANK_VIDEO;
+                    await bgVideo.play();
+                    // Attempt PiP (Must happen on user click)
+                    if (document.pictureInPictureEnabled && !document.pictureInPictureElement) {
+                        bgVideo.requestPictureInPicture().catch(e => console.log("PiP blocked/not supported: ", e));
+                    }
+                } catch (e) {
+                    console.log("Video Auto-play failed: ", e);
+                }
+
                 // Change Button to Red "STOP" state
                 btnToggle.innerHTML = `
                     <span class="flex items-center gap-3">
@@ -920,7 +912,7 @@
                 if(statusDot) { statusDot.classList.remove('bg-red-500'); statusDot.classList.add('bg-green-500'); }
                 if(statusText) statusText.innerText = "ONLINE - TRANSMITTING";
 
-                // Setup Firebase OnDisconnect (if app closes unexpectedly)
+                // Setup Firebase OnDisconnect
                 const busRef = ref(database, 'buses/' + selectedBus.id + '/data');
                 onDisconnect(busRef).update({ active: false });
 
@@ -940,7 +932,7 @@
                 }, err => console.error(err), { enableHighAccuracy: true, maximumAge: 0, timeout: 5000 });
 
             } else {
-                // STOP DRIVING (DISCONNECT)
+                // STOP DRIVING
                 set(ref(database, 'buses/' + selectedBus.id + '/data/active'), false);
                 resetDriverUI();
                 debugCoords.innerHTML = "> LINK TERMINATED<br>> SESSION ENDED";
@@ -1027,34 +1019,6 @@
             }
         }
 
-        // --- STUDENT LOGIC: ON BUS STATUS ---
-        window.toggleOnBusStatus = function() {
-            isOnBus = !isOnBus;
-            const btn = document.getElementById('btn-on-bus');
-            
-            // Generate a random ID for session if not exists
-            let sessionId = localStorage.getItem('studentSessionId');
-            if(!sessionId) {
-                sessionId = Math.random().toString(36).substr(2, 9);
-                localStorage.setItem('studentSessionId', sessionId);
-            }
-
-            const passengerRef = ref(database, 'buses/' + selectedBus.id + '/passengers/' + sessionId);
-
-            if(isOnBus) {
-                btn.classList.add('active');
-                // Report to DB
-                set(passengerRef, {
-                    active: true,
-                    timestamp: Date.now()
-                });
-            } else {
-                btn.classList.remove('active');
-                // Remove from DB
-                remove(passengerRef);
-            }
-        }
-
         // --- STUDENT MAP LOGIC ---
         function initStudentScreen() {
             showScreen('student');
@@ -1069,51 +1033,122 @@
             routePolyline = null;
             studentPos = null;
 
+            // Watch Student Location
             if (navigator.geolocation) {
                 studentWatchId = navigator.geolocation.watchPosition(pos => {
                     studentPos = { lat: pos.coords.latitude, lng: pos.coords.longitude };
                     updateStudentMarker();
                     updatePolylineAndETA();
+                    
+                    // IF Passenger Mode is ON, update Firebase
+                    if(isPassengerMode) {
+                        const uid = localStorage.getItem('studentPhone') || 'anon-' + Math.floor(Math.random()*1000);
+                        const passengerRef = ref(database, `buses/${selectedBus.id}/passengers/${uid}`);
+                        set(passengerRef, {
+                            lat: studentPos.lat,
+                            lng: studentPos.lng,
+                            timestamp: Date.now()
+                        });
+                        // Remove on disconnect
+                        onDisconnect(passengerRef).remove();
+                    }
                 }, null, { enableHighAccuracy: true });
             }
 
-            // Listen for Bus Position
+            // Listen for Bus Position (Driver)
             const busRef = ref(database, 'buses/' + selectedBus.id + '/data');
             onValue(busRef, (snapshot) => {
                 const data = snapshot.val();
-                updateMapDisplay(data);
-                if(data && data.active) updatePolylineAndETA(data);
-            });
-            
-            // Listen for Passenger Counts (Majority Logic)
-            const passRef = ref(database, 'buses/' + selectedBus.id + '/passengers');
-            onValue(passRef, (snapshot) => {
-                const passengers = snapshot.val() || {};
-                const count = Object.keys(passengers).length;
-                const statusEl = document.getElementById('disp-status');
-                
-                // If Bus GPS is missing but passengers > 3, show active
-                if((!busMarker) && count > 2) {
-                    statusEl.innerText = "PASSENGER REPORTED";
-                    statusEl.style.color = "#00ff66";
-                } else if (!busMarker) {
-                    statusEl.innerText = "NO SIGNAL";
-                    statusEl.style.color = "#555";
+                if(data && data.active) {
+                    updateMapDisplay(data, 'driver'); // Normal Driver Logic
                 } else {
-                    statusEl.innerText = "LIVE TRACKING";
-                    statusEl.style.color = "#00f3ff";
+                    // DRIVER IS OFFLINE -> CHECK PASSENGER CROWD
+                    checkCrowdTracking();
                 }
             });
 
-            // Listen for Stations
+            // Also Listen for Crowd Changes if Driver Offline
+            const passengersRef = ref(database, `buses/${selectedBus.id}/passengers`);
+            onValue(passengersRef, (snapshot) => {
+                const busDataRef = ref(database, 'buses/' + selectedBus.id + '/data');
+                // Only if driver inactive
+                // We use a small timeout or check logic inside updateMapDisplay usually, but here we trigger:
+                getDatabase(app); // ensure connection
+            });
+
             loadStationsForMap();
+        }
+
+        function checkCrowdTracking() {
+            const passengersRef = ref(database, `buses/${selectedBus.id}/passengers`);
+            onValue(passengersRef, (snapshot) => {
+                const passengers = snapshot.val();
+                if(passengers) {
+                    // Calculate Average Location
+                    let latSum = 0, lngSum = 0, count = 0;
+                    const now = Date.now();
+                    
+                    Object.values(passengers).forEach(p => {
+                        // Only count if data is fresh (last 5 mins)
+                        if (now - p.timestamp < 300000) { 
+                            latSum += p.lat;
+                            lngSum += p.lng;
+                            count++;
+                        }
+                    });
+
+                    if(count > 0) {
+                        const avgLat = latSum / count;
+                        const avgLng = lngSum / count;
+                        
+                        // Fake a bus data object
+                        const crowdData = {
+                            active: true,
+                            lat: avgLat,
+                            lng: avgLng,
+                            speed: 0,
+                            heading: 0,
+                            lastUpdated: "CROWD SOURCE",
+                            isGhost: true
+                        };
+                        updateMapDisplay(crowdData, 'crowd');
+                    } else {
+                        updateMapDisplay(null);
+                    }
+                } else {
+                    updateMapDisplay(null);
+                }
+            }, {onlyOnce: true});
+        }
+
+        // --- TOGGLE PASSENGER MODE ---
+        window.togglePassengerMode = function() {
+            const btn = document.getElementById('btn-passenger-mode');
+            isPassengerMode = !isPassengerMode;
+            
+            if(isPassengerMode) {
+                btn.classList.add('active');
+                if(!localStorage.getItem('studentPhone')) {
+                    alert("Please set up your Profile first!");
+                    openProfile();
+                    isPassengerMode = false;
+                    btn.classList.remove('active');
+                    return;
+                }
+                alert("PASSENGER MODE ACTIVE: You are now helping track the bus.");
+            } else {
+                btn.classList.remove('active');
+                // Remove self from firebase
+                const uid = localStorage.getItem('studentPhone');
+                if(uid) remove(ref(database, `buses/${selectedBus.id}/passengers/${uid}`));
+                alert("PASSENGER MODE OFF");
+            }
         }
 
         function setMapLayer(type) {
             map.eachLayer((layer) => {
                 if(layer._url) map.removeLayer(layer);
             });
-
             if(type === 'dark') {
                 L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
                     attribution: '&copy; CARTO',
@@ -1127,11 +1162,9 @@
             }
         }
 
-        // --- MAP THEME TOGGLE ---
         window.toggleMapTheme = function() {
             const btn = document.getElementById('toggle-map-btn');
             const isLight = btn.classList.contains('light');
-            
             if(isLight) {
                 setMapLayer('dark');
                 btn.classList.remove('light');
@@ -1146,12 +1179,11 @@
         function updateStudentMarker() {
             if(!studentPos) return;
             const icon = L.divIcon({ className: 'custom-student', html: '<div class="student-marker-core"></div>', iconSize: [14, 14] });
-            
             if(studentMarker) studentMarker.setLatLng([studentPos.lat, studentPos.lng]);
             else studentMarker = L.marker([studentPos.lat, studentPos.lng], { icon: icon }).addTo(map);
         }
 
-        function updateMapDisplay(data) {
+        function updateMapDisplay(data, source = 'driver') {
             const panel = document.getElementById('student-info-panel');
             
             if (data && data.active) {
@@ -1159,15 +1191,29 @@
                 document.getElementById('disp-speed').innerText = Math.round(data.speed) + " KM/H";
                 document.getElementById('disp-time').innerText = data.lastUpdated;
 
-                const busHtml = `
-                    <div class="bus-marker-wrapper" style="transform: rotate(${data.heading || 0}deg);">
-                        <div class="direction-arrow"></div>
-                        <div class="red-pulse-ring"></div>
-                        <div class="red-dot-core"></div>
-                    </div>
-                `;
+                // Determine Icon (Red for Driver, Blue Ghost for Crowd)
+                let busHtml;
+                if(source === 'crowd') {
+                    // GHOST BUS
+                    busHtml = `
+                        <div class="ghost-bus-wrapper">
+                            <div class="blue-pulse-ring"></div>
+                            <div class="blue-dot-core"></div>
+                        </div>
+                    `;
+                } else {
+                    // REAL DRIVER
+                    busHtml = `
+                        <div class="bus-marker-wrapper" style="transform: rotate(${data.heading || 0}deg);">
+                            <div class="direction-arrow"></div>
+                            <div class="red-pulse-ring"></div>
+                            <div class="red-dot-core"></div>
+                        </div>
+                    `;
+                }
+
                 const busIcon = L.divIcon({ 
-                    className: 'custom-bus-red', 
+                    className: 'custom-bus-marker', 
                     html: busHtml, 
                     iconSize: [40, 40],
                     iconAnchor: [20, 20]
@@ -1200,7 +1246,7 @@
 
             if (routePolyline) map.removeLayer(routePolyline);
             routePolyline = L.polyline([studentLatLng, busLatLng], {
-                color: '#00f3ff',
+                color: '#00f3ff', 
                 weight: 3,
                 dashArray: '10, 10',
                 opacity: 0.8
@@ -1209,8 +1255,7 @@
             const R = 6371; 
             const dLat = (busLatLng.lat - studentPos.lat) * Math.PI / 180;
             const dLon = (busLatLng.lng - studentPos.lng) * Math.PI / 180;
-            const a = 
-                Math.sin(dLat/2) * Math.sin(dLat/2) +
+            const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
                 Math.cos(studentPos.lat * Math.PI / 180) * Math.cos(busLatLng.lat * Math.PI / 180) * 
                 Math.sin(dLon/2) * Math.sin(dLon/2);
             const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
@@ -1230,7 +1275,6 @@
         }
 
         let stationDataCache = {};
-
         function loadStationsForMap() {
             const stationRef = ref(database, 'buses/' + selectedBus.id + '/stations');
             onValue(stationRef, (snapshot) => {
@@ -1242,9 +1286,7 @@
         function renderStationsOnMap() {
             stationMarkers.forEach(m => map.removeLayer(m));
             stationMarkers = [];
-            
             const icon = L.divIcon({ className: 'marker-pin-station', html: '📍', iconSize: [30, 30] });
-            
             Object.values(stationDataCache).forEach(stn => {
                 const marker = L.marker([stn.lat, stn.lng], { icon: icon })
                     .bindPopup(`<b style="color:black">${stn.name}</b><br><span style="color:black">${stn.time}</span>`)
@@ -1258,12 +1300,10 @@
             const container = document.getElementById('route-list-content');
             modal.classList.add('open');
             container.innerHTML = '';
-
             if (Object.keys(stationDataCache).length === 0) {
                 container.innerHTML = '<div class="text-center text-gray-500">NO STOPS RECORDED</div>';
                 return;
             }
-
             Object.values(stationDataCache).forEach(stn => {
                 const div = document.createElement('div');
                 div.className = "flex justify-between items-center bg-white/5 p-3 rounded border border-white/10";

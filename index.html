@@ -276,7 +276,7 @@
             border-bottom: 12px solid #ff003c; transform: translateY(-5px);
         }
         
-        /* GHOST BUS MARKER (BLUE) - For Crowd Tracking */
+        /* GHOST BUS MARKER (BLUE) */
         .ghost-bus-wrapper {
             position: relative; width: 40px; height: 40px;
             display: flex; justify-content: center; align-items: center;
@@ -596,8 +596,8 @@
                 <span style="font-family:'Orbitron'; font-size:1.2rem; color: var(--neon-cyan);" id="disp-eta">-- MIN</span>
             </div>
             <div class="panel-data" style="text-align: right;">
-                <div style="color:#888; font-size:0.8rem;">LAST UPDATE</div>
-                <span style="font-family:'Orbitron'; font-size:1.2rem;" id="disp-time">--:--</span>
+                <div style="color:#888; font-size:0.8rem;">STATUS</div>
+                <span style="font-family:'Orbitron'; font-size:1.0rem; color: #888;" id="disp-time">WAITING</span>
             </div>
         </div>
 
@@ -1059,10 +1059,10 @@
             const busRef = ref(database, 'buses/' + selectedBus.id + '/data');
             onValue(busRef, (snapshot) => {
                 const data = snapshot.val();
-                if(data && data.active) {
+                // FIX FOR SINGLE DEVICE TESTING: Always show marker if data exists, just fade it if inactive
+                if(data) {
                     updateMapDisplay(data, 'driver'); // Normal Driver Logic
                 } else {
-                    // DRIVER IS OFFLINE -> CHECK PASSENGER CROWD
                     checkCrowdTracking();
                 }
             });
@@ -1070,10 +1070,9 @@
             // Also Listen for Crowd Changes if Driver Offline
             const passengersRef = ref(database, `buses/${selectedBus.id}/passengers`);
             onValue(passengersRef, (snapshot) => {
+                // If bus marker is missing/inactive, check crowd
                 const busDataRef = ref(database, 'buses/' + selectedBus.id + '/data');
-                // Only if driver inactive
-                // We use a small timeout or check logic inside updateMapDisplay usually, but here we trigger:
-                getDatabase(app); // ensure connection
+                // We let the bus listener handle primary, this is fallback
             });
 
             loadStationsForMap();
@@ -1113,10 +1112,8 @@
                         };
                         updateMapDisplay(crowdData, 'crowd');
                     } else {
-                        updateMapDisplay(null);
+                        // Do not remove marker if we want to show last known pos
                     }
-                } else {
-                    updateMapDisplay(null);
                 }
             }, {onlyOnce: true});
         }
@@ -1186,10 +1183,19 @@
         function updateMapDisplay(data, source = 'driver') {
             const panel = document.getElementById('student-info-panel');
             
-            if (data && data.active) {
+            // KEY FIX: Show marker if data exists, regardless of Active status
+            if (data) {
                 panel.classList.add('show');
                 document.getElementById('disp-speed').innerText = Math.round(data.speed) + " KM/H";
-                document.getElementById('disp-time').innerText = data.lastUpdated;
+                
+                // Set Status Text
+                if(data.active) {
+                     document.getElementById('disp-time').innerText = "ONLINE";
+                     document.getElementById('disp-time').style.color = "#00ff66";
+                } else {
+                     document.getElementById('disp-time').innerText = "LAST SEEN";
+                     document.getElementById('disp-time').style.color = "#ff003c";
+                }
 
                 // Determine Icon (Red for Driver, Blue Ghost for Crowd)
                 let busHtml;
@@ -1202,9 +1208,10 @@
                         </div>
                     `;
                 } else {
-                    // REAL DRIVER
+                    // REAL DRIVER (Dim it if inactive)
+                    const opacity = data.active ? 1 : 0.5;
                     busHtml = `
-                        <div class="bus-marker-wrapper" style="transform: rotate(${data.heading || 0}deg);">
+                        <div class="bus-marker-wrapper" style="transform: rotate(${data.heading || 0}deg); opacity: ${opacity}">
                             <div class="direction-arrow"></div>
                             <div class="red-pulse-ring"></div>
                             <div class="red-dot-core"></div>
@@ -1224,16 +1231,8 @@
                     busMarker.setIcon(busIcon);
                 } else {
                     busMarker = L.marker([data.lat, data.lng], { icon: busIcon }).addTo(map);
-                }
-            } else {
-                panel.classList.remove('show');
-                if (busMarker) {
-                    map.removeLayer(busMarker);
-                    busMarker = null;
-                }
-                if (routePolyline) {
-                    map.removeLayer(routePolyline);
-                    routePolyline = null;
+                    // Center on first load only
+                    map.setView([data.lat, data.lng], 15);
                 }
             }
         }

@@ -69,6 +69,9 @@
 
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    
+    <!-- Leaflet Routing Machine CSS (For Road Path) -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.css" />
 
     <!-- Fonts -->
     <link href="https://fonts.googleapis.com" rel="preconnect"/>
@@ -349,6 +352,9 @@
             padding: 10px; color: white; margin-top: 5px; outline: none;
         }
         .input-field:focus { border-color: var(--taxi-yellow); }
+
+        /* Hide Routing Machine Container - We just want the line */
+        .leaflet-routing-container { display: none !important; }
     </style>
 </head>
 <body>
@@ -678,6 +684,9 @@
 
     <!-- Leaflet JS -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    
+    <!-- Leaflet Routing Machine JS -->
+    <script src="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.js"></script>
 
     <!-- MAIN LOGIC -->
     <script type="module">
@@ -723,6 +732,7 @@
         let studentPos = null;
         let routePolyline = null;
         let isPassengerMode = false;
+        let routingControl = null;
 
         // Navigation
         const screens = {
@@ -799,10 +809,21 @@
             });
         }
 
+        // --- PASSWORD PROTECTION LOGIC ---
         function selectBus(bus) {
             selectedBus = bus;
-            if (currentMode === 'driver') initDriverScreen();
-            else initStudentScreen();
+            
+            if (currentMode === 'driver') {
+                // Ask for password
+                const pass = prompt("ENTER DRIVER ACCESS CODE:");
+                if (pass === '12345678') {
+                    initDriverScreen();
+                } else {
+                    alert("ACCESS DENIED: INCORRECT CREDENTIALS");
+                }
+            } else {
+                initStudentScreen();
+            }
         }
 
         // --- DRIVER LOGIC & VIDEO HACK ---
@@ -1031,6 +1052,7 @@
             studentMarker = null;
             stationMarkers = [];
             routePolyline = null;
+            routingControl = null;
             studentPos = null;
 
             // Watch Student Location
@@ -1062,6 +1084,7 @@
                 // FIX FOR SINGLE DEVICE TESTING: Always show marker if data exists, just fade it if inactive
                 if(data) {
                     updateMapDisplay(data, 'driver'); // Normal Driver Logic
+                    updatePolylineAndETA(); // Re-calculate route when bus moves
                 } else {
                     checkCrowdTracking();
                 }
@@ -1111,8 +1134,7 @@
                             isGhost: true
                         };
                         updateMapDisplay(crowdData, 'crowd');
-                    } else {
-                        // Do not remove marker if we want to show last known pos
+                        updatePolylineAndETA(); // Update route for ghost bus too
                     }
                 }
             }, {onlyOnce: true});
@@ -1237,40 +1259,46 @@
             }
         }
 
-        function updatePolylineAndETA(busData) {
+        // --- UPDATED ROUTING LOGIC (ROAD PATH) ---
+        function updatePolylineAndETA() {
             if (!studentPos || !busMarker) return;
             
             const busLatLng = busMarker.getLatLng();
-            const studentLatLng = [studentPos.lat, studentPos.lng];
 
-            if (routePolyline) map.removeLayer(routePolyline);
-            routePolyline = L.polyline([studentLatLng, busLatLng], {
-                color: '#00f3ff', 
-                weight: 3,
-                dashArray: '10, 10',
-                opacity: 0.8
-            }).addTo(map);
-
-            const R = 6371; 
-            const dLat = (busLatLng.lat - studentPos.lat) * Math.PI / 180;
-            const dLon = (busLatLng.lng - studentPos.lng) * Math.PI / 180;
-            const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-                Math.cos(studentPos.lat * Math.PI / 180) * Math.cos(busLatLng.lat * Math.PI / 180) * 
-                Math.sin(dLon/2) * Math.sin(dLon/2);
-            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
-            const distanceKM = R * c;
-
-            const speedText = document.getElementById('disp-speed').innerText;
-            const speedVal = parseFloat(speedText) || 0;
-            const etaEl = document.getElementById('disp-eta');
-            
-            if (speedVal > 1) {
-                const timeHours = distanceKM / speedVal;
-                const timeMin = Math.round(timeHours * 60);
-                etaEl.innerText = timeMin + " MIN";
-            } else {
-                etaEl.innerText = "-- MIN";
+            // Use Leaflet Routing Machine for actual Road Path
+            if (routingControl) {
+                map.removeControl(routingControl);
+                routingControl = null;
             }
+
+            // Create new route using OSRM
+            routingControl = L.Routing.control({
+                waypoints: [
+                    L.latLng(studentPos.lat, studentPos.lng),
+                    L.latLng(busLatLng.lat, busLatLng.lng)
+                ],
+                createMarker: function() { return null; }, // We already have custom markers
+                lineOptions: {
+                    styles: [{color: '#00f3ff', opacity: 0.8, weight: 4, dashArray: '10, 10'}]
+                },
+                addWaypoints: false,
+                draggableWaypoints: false,
+                fitSelectedRoutes: false,
+                show: false // We hide the instructions box via CSS
+            }).on('routesfound', function(e) {
+                const routes = e.routes;
+                const summary = routes[0].summary;
+                // summary.totalDistance is in meters, totalTime in seconds
+                
+                const timeMin = Math.round(summary.totalTime / 60);
+                const etaEl = document.getElementById('disp-eta');
+                
+                if (timeMin > 0) {
+                    etaEl.innerText = timeMin + " MIN";
+                } else {
+                    etaEl.innerText = "< 1 MIN";
+                }
+            }).addTo(map);
         }
 
         let stationDataCache = {};

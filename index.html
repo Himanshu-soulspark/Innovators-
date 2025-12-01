@@ -22,6 +22,8 @@
                         "card-bg": "#1A1A1A",
                         "dark-bg": "#050505",
                         "neon-cyan": "#00f3ff",
+                        "neon-red": "#ff003c",
+                        "neon-green": "#00ff66",
                     },
                     fontFamily: {
                         sans: ['Space Grotesk', 'sans-serif'],
@@ -77,6 +79,8 @@
         /* GLOBAL SETTINGS */
         :root {
             --neon-cyan: #00f3ff;
+            --neon-red: #ff003c;
+            --neon-green: #00ff66;
             --bg-dark: #050505;
             --taxi-yellow: #FACC15;
         }
@@ -165,6 +169,7 @@
             animation: radar 2s linear infinite;
         }
 
+        /* Power Button States */
         .power-btn {
             position: relative;
             background: linear-gradient(180deg, #1a1a1a 0%, #000 100%);
@@ -178,14 +183,16 @@
             background: radial-gradient(circle at center, rgba(255,255,255,0.1) 0%, transparent 70%);
             opacity: 0; transition: opacity 0.3s;
         }
+        
+        /* ACTIVE STATE (Broadcast ON) - Now RED to signify Stop/Disconnect */
         .power-btn.active {
-            background: var(--taxi-yellow);
-            color: black;
-            border-color: var(--taxi-yellow);
-            box-shadow: 0 0 30px rgba(250, 204, 21, 0.4);
+            background: linear-gradient(180deg, #330000 0%, #000 100%);
+            color: var(--neon-red);
+            border-color: var(--neon-red);
+            box-shadow: 0 0 30px rgba(255, 0, 60, 0.4);
         }
-        .power-btn.active .btn-status-text { color: black; }
-        .power-btn.active .material-symbols-outlined { color: black; }
+        .power-btn.active .btn-status-text { color: var(--neon-red); }
+        .power-btn.active .material-symbols-outlined { color: var(--neon-red); }
         
         /* New Station Button Styles */
         .station-btn {
@@ -221,8 +228,7 @@
         @keyframes scan { 0% {top:0;} 100% {top:100%;} }
 
         /* === SCREEN 5: STUDENT MAP UI === */
-        #map { height: calc(100% - 60px); width: 100%; z-index: 1; filter: contrast(1.2) grayscale(0.2); transition: filter 0.5s; }
-        .map-light { filter: contrast(1) grayscale(0) !important; }
+        #map { height: calc(100% - 60px); width: 100%; z-index: 1; transition: all 0.5s; }
         
         .glass-panel-map {
             position: absolute; bottom: 80px; left: 10px; right: 10px;
@@ -244,23 +250,44 @@
         }
         .nav-item.active { color: var(--neon-cyan); text-shadow: 0 0 5px var(--neon-cyan); }
         
-        /* NAVIGATION ARROW ICON */
-        .arrow-icon-wrapper {
-            width: 40px; height: 40px;
+        /* === CUSTOM MAP MARKERS (RED BUS / GREEN STUDENT) === */
+        
+        /* BUS MARKER (RED DOT) */
+        .bus-marker-wrapper {
+            position: relative; width: 40px; height: 40px;
             display: flex; justify-content: center; align-items: center;
-            transition: transform 0.5s linear; /* Smooth rotation */
+            transition: transform 0.5s linear; 
         }
-        .nav-arrow {
-            width: 0; height: 0; 
-            border-left: 12px solid transparent;
-            border-right: 12px solid transparent;
-            border-bottom: 30px solid var(--neon-cyan);
-            filter: drop-shadow(0 0 10px var(--neon-cyan));
-            position: relative;
+        .red-dot-core {
+            width: 16px; height: 16px; background: #ff003c;
+            border-radius: 50%; box-shadow: 0 0 15px #ff003c, inset 0 0 5px white;
+            position: relative; z-index: 2; border: 2px solid white;
         }
-        .nav-arrow::after {
-            content: ''; position: absolute; top: 10px; left: -6px;
-            width: 12px; height: 12px; background: #000; border-radius: 50%;
+        .red-pulse-ring {
+            position: absolute; width: 100%; height: 100%;
+            border-radius: 50%; border: 1px solid #ff003c;
+            opacity: 0; animation: pulse-ring 1.5s infinite;
+        }
+        .direction-arrow {
+            position: absolute; top: -10px; width: 0; height: 0;
+            border-left: 6px solid transparent; border-right: 6px solid transparent;
+            border-bottom: 12px solid #ff003c; transform: translateY(-5px);
+        }
+        
+        /* STUDENT MARKER (GREEN DOT) */
+        .student-marker-core {
+            width: 14px; height: 14px; background: #00ff66;
+            border-radius: 50%; box-shadow: 0 0 15px #00ff66, inset 0 0 4px white;
+            border: 2px solid white; position: relative;
+        }
+        .student-marker-core::after {
+            content: ''; position: absolute; top: -10px; left: -10px; right: -10px; bottom: -10px;
+            border-radius: 50%; background: rgba(0, 255, 102, 0.2); animation: pulse-glow 2s infinite;
+        }
+
+        @keyframes pulse-ring {
+            0% { transform: scale(0.5); opacity: 1; }
+            100% { transform: scale(1.5); opacity: 0; }
         }
 
         .marker-pin-station { font-size: 28px; filter: drop-shadow(0 0 10px #ff00ea); text-align: center; color: #ff00ea; }
@@ -502,7 +529,7 @@
             </button>
             <p class="text-[9px] text-gray-500 text-center mt-[-10px] uppercase">Tap to Add • Long Press for List</p>
 
-            <!-- Main Power Button -->
+            <!-- Main Power Button (DISCONNECT/CONNECT) -->
             <button id="btn-toggle-gps" class="power-btn w-full h-16 rounded-lg flex items-center justify-between px-6 group">
                 <span class="flex items-center gap-3">
                     <span class="material-symbols-outlined text-gray-500 group-hover:text-white transition-colors">power_settings_new</span>
@@ -618,7 +645,7 @@
     <!-- MAIN LOGIC -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getDatabase, ref, set, push, remove, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        import { getDatabase, ref, set, push, remove, onValue, onDisconnect } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
         // CONFIG
         const firebaseConfig = {
@@ -651,12 +678,14 @@
         let watchId = null;
         let map = null;
         let busMarker = null;
+        let studentMarker = null;
         let stationMarkers = [];
         let isDriving = false;
         let currentPos = null;
         let studentWatchId = null;
         let studentPos = null;
         let routePolyline = null;
+        let wakeLock = null;
 
         // Navigation
         const screens = {
@@ -739,7 +768,18 @@
             else initStudentScreen();
         }
 
-        // --- DRIVER LOGIC ---
+        // --- DRIVER LOGIC & WAKE LOCK ---
+        async function requestWakeLock() {
+            try {
+                if ('wakeLock' in navigator) {
+                    wakeLock = await navigator.wakeLock.request('screen');
+                    console.log('Wake Lock active');
+                }
+            } catch (err) {
+                console.error(`${err.name}, ${err.message}`);
+            }
+        }
+
         function initDriverScreen() {
             showScreen('driver');
             document.getElementById('driver-bus-name').innerText = selectedBus.name;
@@ -785,6 +825,8 @@
             isDriving = false;
             currentPos = null;
             if(watchId) navigator.geolocation.clearWatch(watchId);
+            if(wakeLock) wakeLock.release().then(() => wakeLock = null);
+            
             btnToggle.classList.remove('active');
             
             btnToggle.innerHTML = `
@@ -804,19 +846,25 @@
             stationBtn.classList.add('opacity-50', 'pointer-events-none');
         }
 
-        btnToggle.addEventListener('click', () => {
+        btnToggle.addEventListener('click', async () => {
             if (!isDriving) {
+                // START DRIVING
                 if (!navigator.geolocation) return alert("GPS System Failure");
+                
+                // Request Wake Lock to keep screen on (Background Tracking)
+                await requestWakeLock();
+
                 isDriving = true;
                 btnToggle.classList.add('active');
                 stationBtn.classList.remove('opacity-50', 'pointer-events-none');
                 
+                // Change Button to Red "STOP" state
                 btnToggle.innerHTML = `
                     <span class="flex items-center gap-3">
-                        <span class="material-symbols-outlined text-black animate-spin">settings</span>
-                        <span class="btn-status-text font-bold text-lg tracking-widest text-black">BROADCASTING LIVE</span>
+                        <span class="material-symbols-outlined animate-spin">sync</span>
+                        <span class="btn-status-text font-bold text-lg tracking-widest">ABORT SEQUENCE</span>
                     </span>
-                    <span class="material-symbols-outlined text-black">wifi_tethering</span>
+                    <span class="material-symbols-outlined">highlight_off</span>
                 `;
 
                 debugCoords.innerHTML = "> INITIALIZING UPLINK...<br>> ACQUIRING COORDINATES...";
@@ -824,6 +872,10 @@
                 
                 if(statusDot) { statusDot.classList.remove('bg-red-500'); statusDot.classList.add('bg-green-500'); }
                 if(statusText) statusText.innerText = "ONLINE - TRANSMITTING";
+
+                // Setup Firebase OnDisconnect (if app closes unexpectedly)
+                const busRef = ref(database, 'buses/' + selectedBus.id + '/data');
+                onDisconnect(busRef).update({ active: false });
 
                 watchId = navigator.geolocation.watchPosition(pos => {
                     const { latitude: lat, longitude: lng, speed, heading } = pos.coords;
@@ -834,15 +886,17 @@
 
                     debugCoords.innerHTML = `> LAT: ${lat.toFixed(5)} | LNG: ${lng.toFixed(5)}<br>> SPD: ${spd} KM/H | HDG: ${Math.round(head)}°`;
 
-                    set(ref(database, 'buses/' + selectedBus.id + '/data'), {
+                    set(busRef, {
                         lat, lng, speed: spd, heading: head, lastUpdated: time, active: true, 
                         name: selectedBus.name, route: selectedBus.desc
                     });
-                }, err => console.error(err), { enableHighAccuracy: true });
+                }, err => console.error(err), { enableHighAccuracy: true, maximumAge: 0, timeout: 5000 });
 
             } else {
-                resetDriverUI();
+                // STOP DRIVING (DISCONNECT)
+                // Explicitly remove bus active status so icon disappears
                 set(ref(database, 'buses/' + selectedBus.id + '/data/active'), false);
+                resetDriverUI();
                 debugCoords.innerHTML = "> LINK TERMINATED<br>> SESSION ENDED";
             }
         });
@@ -933,24 +987,22 @@
             if (map) { map.remove(); map = null; }
             map = L.map('map', { zoomControl: false }).setView([20.5937, 78.9629], 5);
             
-            // Default Dark Mode
-            const darkTile = 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
-            L.tileLayer(darkTile, {
-                attribution: '&copy; CARTO',
-                maxZoom: 19
-            }).addTo(map);
+            // Set Initial Tile Layer (Dark)
+            setMapLayer('dark');
 
             busMarker = null;
+            studentMarker = null;
             stationMarkers = [];
             routePolyline = null;
             studentPos = null;
 
-            // Watch Student Location
+            // Watch Student Location (Green Dot)
             if (navigator.geolocation) {
                 studentWatchId = navigator.geolocation.watchPosition(pos => {
                     studentPos = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+                    updateStudentMarker();
                     updatePolylineAndETA();
-                });
+                }, null, { enableHighAccuracy: true });
             }
 
             // Listen for Bus Position
@@ -958,53 +1010,77 @@
             onValue(busRef, (snapshot) => {
                 const data = snapshot.val();
                 updateMapDisplay(data);
-                updatePolylineAndETA(data);
+                if(data && data.active) updatePolylineAndETA(data);
             });
 
-            // Listen for Stations (for Route List and Map)
+            // Listen for Stations
             loadStationsForMap();
+        }
+
+        function setMapLayer(type) {
+            // Remove existing layers
+            map.eachLayer((layer) => {
+                if(layer._url) map.removeLayer(layer);
+            });
+
+            if(type === 'dark') {
+                L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+                    attribution: '&copy; CARTO',
+                    maxZoom: 19
+                }).addTo(map);
+            } else {
+                // CartoDB Positron (High quality Light Mode)
+                L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+                    attribution: '&copy; CARTO',
+                    maxZoom: 19
+                }).addTo(map);
+            }
         }
 
         // --- MAP THEME TOGGLE ---
         window.toggleMapTheme = function() {
-            const mapContainer = document.getElementById('map');
             const btn = document.getElementById('toggle-map-btn');
-            const isLight = mapContainer.classList.contains('map-light');
+            const isLight = btn.classList.contains('light');
             
             if(isLight) {
-                // Switch to Dark
-                mapContainer.classList.remove('map-light');
+                setMapLayer('dark');
                 btn.classList.remove('light');
                 btn.innerHTML = '<span class="material-symbols-outlined">light_mode</span>';
-                
-                // Leaflet doesn't support instant tile swapping easily without re-init or layer control, 
-                // but CSS filter works great for Dark/Light inversion on dark tiles.
-                // However, for pure light mode, let's just use CSS filter on the container
-                // The CSS .map-light removes the contrast/grayscale filter.
             } else {
-                // Switch to Light
-                mapContainer.classList.add('map-light');
+                setMapLayer('light');
                 btn.classList.add('light');
                 btn.innerHTML = '<span class="material-symbols-outlined">dark_mode</span>';
             }
         }
 
+        function updateStudentMarker() {
+            if(!studentPos) return;
+            const icon = L.divIcon({ className: 'custom-student', html: '<div class="student-marker-core"></div>', iconSize: [14, 14] });
+            
+            if(studentMarker) studentMarker.setLatLng([studentPos.lat, studentPos.lng]);
+            else studentMarker = L.marker([studentPos.lat, studentPos.lng], { icon: icon }).addTo(map);
+        }
+
         function updateMapDisplay(data) {
             const panel = document.getElementById('student-info-panel');
+            
+            // IF BUS IS ACTIVE
             if (data && data.active) {
                 panel.classList.add('show');
                 document.getElementById('disp-speed').innerText = Math.round(data.speed) + " KM/H";
                 document.getElementById('disp-time').innerText = data.lastUpdated;
 
-                // Rotatable Arrow Icon
-                const arrowHtml = `
-                    <div class="arrow-icon-wrapper" style="transform: rotate(${data.heading || 0}deg);">
-                        <div class="nav-arrow"></div>
+                // RED DOT BUS MARKER
+                const busHtml = `
+                    <div class="bus-marker-wrapper" style="transform: rotate(${data.heading || 0}deg);">
+                        <div class="direction-arrow"></div>
+                        <div class="red-pulse-ring"></div>
+                        <div class="red-dot-core"></div>
                     </div>
                 `;
                 const busIcon = L.divIcon({ 
-                    className: 'custom-bus-arrow', 
-                    html: arrowHtml, 
+                    className: 'custom-bus-red', 
+                    html: busHtml, 
                     iconSize: [40, 40],
                     iconAnchor: [20, 20]
                 });
@@ -1016,14 +1092,23 @@
                     busMarker = L.marker([data.lat, data.lng], { icon: busIcon }).addTo(map);
                 }
 
-                map.setView([data.lat, data.lng], 16);
+                // If first load or huge jump, center map
+                // map.setView([data.lat, data.lng], 16); 
             } else {
+                // BUS DISCONNECTED
                 panel.classList.remove('show');
+                if (busMarker) {
+                    map.removeLayer(busMarker);
+                    busMarker = null;
+                }
+                if (routePolyline) {
+                    map.removeLayer(routePolyline);
+                    routePolyline = null;
+                }
             }
         }
 
         function updatePolylineAndETA(busData) {
-            // Need both positions to draw line and calc ETA
             if (!studentPos || !busMarker) return;
             
             const busLatLng = busMarker.getLatLng();
@@ -1032,14 +1117,13 @@
             // Draw Line
             if (routePolyline) map.removeLayer(routePolyline);
             routePolyline = L.polyline([studentLatLng, busLatLng], {
-                color: '#00f3ff',
+                color: '#00f3ff', // Cyan line
                 weight: 3,
                 dashArray: '10, 10',
-                opacity: 0.7
+                opacity: 0.8
             }).addTo(map);
 
-            // Calculate ETA
-            // Distance (Haversine approx)
+            // Calc ETA
             const R = 6371; 
             const dLat = (busLatLng.lat - studentPos.lat) * Math.PI / 180;
             const dLon = (busLatLng.lng - studentPos.lng) * Math.PI / 180;
@@ -1050,10 +1134,8 @@
             const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
             const distanceKM = R * c;
 
-            // Get speed from current bus data or UI
             const speedText = document.getElementById('disp-speed').innerText;
             const speedVal = parseFloat(speedText) || 0;
-
             const etaEl = document.getElementById('disp-eta');
             
             if (speedVal > 1) {
@@ -1071,7 +1153,7 @@
             const stationRef = ref(database, 'buses/' + selectedBus.id + '/stations');
             onValue(stationRef, (snapshot) => {
                 stationDataCache = snapshot.val() || {};
-                renderStationsOnMap(); // Always show stations now as requested by user context logic implies visibility
+                renderStationsOnMap(); 
             });
         }
 

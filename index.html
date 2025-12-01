@@ -228,26 +228,22 @@
         }
         @keyframes scan { 0% {top:0;} 100% {top:100%;} }
 
-        /* === SCREEN 5: STUDENT MAP UI (UPDATED) === */
+        /* === SCREEN 5: STUDENT MAP UI === */
         #map { height: 100%; width: 100%; z-index: 1; }
         
-        /* NEW TOP STRIP (TRANSPARENT) */
+        /* TOP STRIP (TRANSPARENT) */
         .top-info-strip {
             position: absolute; top: 0; left: 0; width: 100%; height: 80px;
             background: linear-gradient(to bottom, rgba(0,0,0,0.9), transparent);
             z-index: 999;
             display: flex; justify-content: space-between; align-items: center;
             padding: 10px 20px;
-            pointer-events: none; /* Let clicks pass through except buttons */
+            pointer-events: none;
         }
         .top-info-strip > div { pointer-events: auto; }
         
-        .info-block {
-            text-align: center;
-        }
-        .info-label {
-            font-size: 10px; color: #888; letter-spacing: 1px; font-weight: bold;
-        }
+        .info-block { text-align: center; }
+        .info-label { font-size: 10px; color: #888; letter-spacing: 1px; font-weight: bold; }
         .info-value {
             font-family: 'Orbitron'; font-size: 1.4rem; color: white;
             text-shadow: 0 0 10px rgba(0,0,0,0.8);
@@ -291,7 +287,7 @@
         .menu-item:active { background: rgba(250, 204, 21, 0.2); }
         .menu-item .material-symbols-outlined { color: var(--taxi-yellow); }
 
-        /* BOTTOM NAV (SHARED) */
+        /* BOTTOM NAV */
         .bottom-nav {
             position: absolute; bottom: 0; left: 0; width: 100%; height: 65px;
             background: #020b14; border-top: 1px solid var(--neon-cyan);
@@ -303,56 +299,63 @@
         }
         .nav-item.active { color: var(--neon-cyan); text-shadow: 0 0 5px var(--neon-cyan); }
         
-        /* === CUSTOM MAP MARKERS === */
-        .bus-marker-wrapper {
-            position: relative; width: 40px; height: 40px;
+        /* === NEW CUSTOM MAP PIN MARKERS === */
+
+        /* SHARED PIN STYLES */
+        .map-pin-container {
+            width: 50px; height: 50px;
             display: flex; justify-content: center; align-items: center;
-            transition: transform 0.5s linear; 
-        }
-        .red-dot-core {
-            width: 16px; height: 16px; background: #ff003c;
-            border-radius: 50%; box-shadow: 0 0 15px #ff003c, inset 0 0 5px white;
-            position: relative; z-index: 2; border: 2px solid white;
-        }
-        .red-pulse-ring {
-            position: absolute; width: 100%; height: 100%;
-            border-radius: 50%; border: 1px solid #ff003c;
-            opacity: 0; animation: pulse-ring 1.5s infinite;
-        }
-        .direction-arrow {
-            position: absolute; top: -10px; width: 0; height: 0;
-            border-left: 6px solid transparent; border-right: 6px solid transparent;
-            border-bottom: 12px solid #ff003c; transform: translateY(-5px);
+            position: relative;
+            filter: drop-shadow(0 5px 5px rgba(0,0,0,0.5));
+            transition: transform 0.3s ease;
         }
         
-        .ghost-bus-wrapper {
-            position: relative; width: 40px; height: 40px;
-            display: flex; justify-content: center; align-items: center;
+        /* BUS MARKER (RED PIN) */
+        .pin-outer-bus {
+            font-size: 50px;
+            color: #ff003c; /* Neon Red */
+            position: absolute;
+            top: -20px;
+            text-shadow: 0 0 10px rgba(255, 0, 60, 0.6);
+            z-index: 1;
         }
-        .blue-dot-core {
-            width: 16px; height: 16px; background: #0088ff;
-            border-radius: 50%; box-shadow: 0 0 15px #0088ff, inset 0 0 5px white;
-            position: relative; z-index: 2; border: 2px solid white;
+        .pin-inner-icon-bus {
+            font-size: 20px;
+            color: white;
+            position: absolute;
+            top: -8px; /* Center inside the pin head */
+            z-index: 2;
         }
-        .blue-pulse-ring {
-            position: absolute; width: 100%; height: 100%;
-            border-radius: 50%; border: 1px solid #0088ff;
-            opacity: 0; animation: pulse-ring 2s infinite;
+        
+        /* STUDENT MARKER (GREEN PIN) */
+        .pin-outer-student {
+            font-size: 50px;
+            color: #00ff66; /* Neon Green */
+            position: absolute;
+            top: -20px;
+            text-shadow: 0 0 10px rgba(0, 255, 102, 0.6);
+            z-index: 1;
+        }
+        .pin-inner-icon-student {
+            font-size: 20px;
+            color: black;
+            position: absolute;
+            top: -8px; /* Center inside the pin head */
+            z-index: 2;
+            font-weight: bold;
         }
 
-        .student-marker-core {
-            width: 14px; height: 14px; background: #00ff66;
-            border-radius: 50%; box-shadow: 0 0 15px #00ff66, inset 0 0 4px white;
-            border: 2px solid white; position: relative;
-        }
-        .student-marker-core::after {
-            content: ''; position: absolute; top: -10px; left: -10px; right: -10px; bottom: -10px;
-            border-radius: 50%; background: rgba(0, 255, 102, 0.2); animation: pulse-glow 2s infinite;
+        /* GHOST BUS (BLUE) */
+        .pin-outer-ghost {
+            font-size: 50px; color: #0088ff; position: absolute; top: -20px;
+            text-shadow: 0 0 10px rgba(0, 136, 255, 0.6); z-index: 1; opacity: 0.7;
         }
 
-        @keyframes pulse-ring {
-            0% { transform: scale(0.5); opacity: 1; }
-            100% { transform: scale(1.5); opacity: 0; }
+        /* PULSE RINGS UNDER PINS */
+        .pin-pulse {
+            position: absolute; top: 20px; left: 50%; transform: translateX(-50%);
+            width: 20px; height: 10px; background: rgba(0,0,0,0.5);
+            border-radius: 50%; filter: blur(2px); z-index: 0;
         }
 
         .marker-pin-station { font-size: 28px; filter: drop-shadow(0 0 10px #ff00ea); text-align: center; color: #ff00ea; }
@@ -1179,13 +1182,31 @@
             }
         }
 
+        // --- NEW UPDATED STUDENT MARKER (GREEN LOCATION PIN) ---
         function updateStudentMarker() {
             if(!studentPos) return;
-            const icon = L.divIcon({ className: 'custom-student', html: '<div class="student-marker-core"></div>', iconSize: [14, 14] });
+            
+            // GREEN PIN WITH STUDENT ICON INSIDE
+            const studentHtml = `
+                <div class="map-pin-container">
+                    <div class="pin-pulse"></div>
+                    <span class="material-symbols-outlined pin-outer-student">location_on</span>
+                    <span class="material-symbols-outlined pin-inner-icon-student">person</span>
+                </div>
+            `;
+            
+            const icon = L.divIcon({ 
+                className: 'custom-student', 
+                html: studentHtml, 
+                iconSize: [50, 50],
+                iconAnchor: [25, 45] // Tip of the pin
+            });
+
             if(studentMarker) studentMarker.setLatLng([studentPos.lat, studentPos.lng]);
             else studentMarker = L.marker([studentPos.lat, studentPos.lng], { icon: icon }).addTo(map);
         }
 
+        // --- NEW UPDATED BUS MARKER (RED LOCATION PIN) ---
         function updateMapDisplay(data, source = 'driver') {
             if (data) {
                 document.getElementById('disp-speed').innerText = Math.round(data.speed) + " KM/H";
@@ -1200,13 +1221,31 @@
 
                 let busHtml;
                 if(source === 'crowd') {
-                    busHtml = `<div class="ghost-bus-wrapper"><div class="blue-pulse-ring"></div><div class="blue-dot-core"></div></div>`;
+                    busHtml = `
+                        <div class="map-pin-container">
+                            <div class="pin-pulse"></div>
+                            <span class="material-symbols-outlined pin-outer-ghost">location_on</span>
+                            <span class="material-symbols-outlined pin-inner-icon-bus">question_mark</span>
+                        </div>
+                    `;
                 } else {
+                    // RED PIN WITH BUS ICON INSIDE
                     const opacity = data.active ? 1 : 0.5;
-                    busHtml = `<div class="bus-marker-wrapper" style="transform: rotate(${data.heading || 0}deg); opacity: ${opacity}"><div class="direction-arrow"></div><div class="red-pulse-ring"></div><div class="red-dot-core"></div></div>`;
+                    busHtml = `
+                        <div class="map-pin-container" style="opacity: ${opacity}">
+                            <div class="pin-pulse"></div>
+                            <span class="material-symbols-outlined pin-outer-bus">location_on</span>
+                            <span class="material-symbols-outlined pin-inner-icon-bus">directions_bus</span>
+                        </div>
+                    `;
                 }
 
-                const busIcon = L.divIcon({ className: 'custom-bus-marker', html: busHtml, iconSize: [40, 40], iconAnchor: [20, 20] });
+                const busIcon = L.divIcon({ 
+                    className: 'custom-bus-marker', 
+                    html: busHtml, 
+                    iconSize: [50, 50], 
+                    iconAnchor: [25, 45] // Tip of the pin
+                });
 
                 if (busMarker) {
                     busMarker.setLatLng([data.lat, data.lng]);
@@ -1249,9 +1288,6 @@
                     lineCap: 'round',
                     lineJoin: 'round'
                 }).addTo(map);
-
-                // Add simple glow effect duplicate
-                // L.polyline(e.routes[0].coordinates, { color: '#00f3ff', weight: 8, opacity: 0.2 }).addTo(map);
 
             }).addTo(map);
         }

@@ -299,9 +299,7 @@
         }
         .nav-item.active { color: var(--neon-cyan); text-shadow: 0 0 5px var(--neon-cyan); }
         
-        /* === NEW CUSTOM MAP PIN MARKERS === */
-
-        /* SHARED PIN STYLES */
+        /* === CUSTOM MAP MARKERS === */
         .map-pin-container {
             width: 50px; height: 50px;
             display: flex; justify-content: center; align-items: center;
@@ -309,54 +307,50 @@
             filter: drop-shadow(0 5px 5px rgba(0,0,0,0.5));
             transition: transform 0.3s ease;
         }
-        
-        /* BUS MARKER (RED PIN) */
         .pin-outer-bus {
-            font-size: 50px;
-            color: #ff003c; /* Neon Red */
-            position: absolute;
-            top: -20px;
-            text-shadow: 0 0 10px rgba(255, 0, 60, 0.6);
-            z-index: 1;
+            font-size: 50px; color: #ff003c; position: absolute; top: -20px;
+            text-shadow: 0 0 10px rgba(255, 0, 60, 0.6); z-index: 1;
         }
         .pin-inner-icon-bus {
-            font-size: 20px;
-            color: white;
-            position: absolute;
-            top: -8px; /* Center inside the pin head */
-            z-index: 2;
+            font-size: 20px; color: white; position: absolute; top: -8px; z-index: 2;
         }
-        
-        /* STUDENT MARKER (GREEN PIN) */
         .pin-outer-student {
-            font-size: 50px;
-            color: #00ff66; /* Neon Green */
-            position: absolute;
-            top: -20px;
-            text-shadow: 0 0 10px rgba(0, 255, 102, 0.6);
-            z-index: 1;
+            font-size: 50px; color: #00ff66; position: absolute; top: -20px;
+            text-shadow: 0 0 10px rgba(0, 255, 102, 0.6); z-index: 1;
         }
         .pin-inner-icon-student {
-            font-size: 20px;
-            color: black;
-            position: absolute;
-            top: -8px; /* Center inside the pin head */
-            z-index: 2;
-            font-weight: bold;
+            font-size: 20px; color: black; position: absolute; top: -8px; z-index: 2; font-weight: bold;
         }
-
-        /* GHOST BUS (BLUE) */
         .pin-outer-ghost {
             font-size: 50px; color: #0088ff; position: absolute; top: -20px;
             text-shadow: 0 0 10px rgba(0, 136, 255, 0.6); z-index: 1; opacity: 0.7;
         }
-
-        /* PULSE RINGS UNDER PINS */
         .pin-pulse {
             position: absolute; top: 20px; left: 50%; transform: translateX(-50%);
             width: 20px; height: 10px; background: rgba(0,0,0,0.5);
             border-radius: 50%; filter: blur(2px); z-index: 0;
         }
+        
+        /* CUSTOM STATION DOT (GREEN) */
+        .custom-station-dot {
+            width: 20px; height: 20px; background: #00ff66;
+            border-radius: 50%; border: 3px solid white;
+            box-shadow: 0 0 15px #00ff66;
+            animation: pulse-glow 2s infinite;
+        }
+
+        /* START WALK BUTTON */
+        #btn-start-walk {
+            position: absolute; bottom: 80px; left: 50%; transform: translateX(-50%);
+            background: #00ff66; color: black; font-weight: bold;
+            padding: 10px 20px; border-radius: 20px;
+            box-shadow: 0 0 15px rgba(0, 255, 102, 0.5);
+            font-family: 'Rajdhani', sans-serif;
+            z-index: 998; letter-spacing: 1px;
+            display: none; /* Hidden by default until station is set */
+            border: 2px solid white;
+        }
+        #btn-start-walk:active { transform: translateX(-50%) scale(0.95); }
 
         .marker-pin-station { font-size: 28px; filter: drop-shadow(0 0 10px #ff00ea); text-align: center; color: #ff00ea; }
 
@@ -665,7 +659,18 @@
                 <span class="material-symbols-outlined">refresh</span>
                 <span class="text-sm font-bold tracking-widest">REFRESH MAP</span>
             </div>
+
+            <!-- NEW: PUT STATION BUTTON -->
+            <div class="menu-item" onclick="setCustomStation()">
+                <span class="material-symbols-outlined text-neon-green">add_location</span>
+                <span class="text-sm font-bold tracking-widest text-neon-green">SET MY STATION</span>
+            </div>
         </div>
+
+        <!-- NEW: START WALK BUTTON -->
+        <button id="btn-start-walk" onclick="startWalkingRoute()">
+            START WALK
+        </button>
 
         <div id="map"></div>
 
@@ -790,6 +795,10 @@
         let routePolyline = null; // Store the Leaflet Polyline here
         let isPassengerMode = false;
         let routingControl = null;
+        
+        // NEW VARIABLES FOR WALKING STATION
+        let customStationPos = null;
+        let walkingControl = null;
 
         const screens = {
             splash: document.getElementById('screen-splash'),
@@ -839,6 +848,60 @@
             } else {
                 alert("Searching for signal...");
             }
+        }
+
+        // --- NEW: SET CUSTOM STATION (GREEN DOT) ---
+        window.setCustomStation = function() {
+            if(!studentPos) {
+                alert("Wait for GPS Signal first!");
+                return;
+            }
+            
+            // Save current position as station
+            customStationPos = { lat: studentPos.lat, lng: studentPos.lng };
+            
+            // Save to LocalStorage so it remembers even if app closes
+            localStorage.setItem('myStationLat', customStationPos.lat);
+            localStorage.setItem('myStationLng', customStationPos.lng);
+
+            // Draw Dot
+            drawCustomStation();
+            
+            // Show Start Walk Button
+            document.getElementById('btn-start-walk').style.display = 'block';
+
+            alert("STATION SET! When you are away, click 'Start Walk' to see route.");
+            toggleSettings();
+        }
+
+        function drawCustomStation() {
+            if(!map || !customStationPos) return;
+            
+            // Remove old one if exists (we store reference on map object to find it easily, or just redraw)
+            // Ideally we'd keep a reference, but for simplicity, let's just add it.
+            // A Green Dot
+            const icon = L.divIcon({ className: 'custom-station-dot', iconSize: [20, 20] });
+            L.marker([customStationPos.lat, customStationPos.lng], { icon: icon }).addTo(map).bindPopup("MY STATION");
+        }
+
+        // --- NEW: START WALKING ROUTE ---
+        window.startWalkingRoute = function() {
+            if(!studentPos || !customStationPos) return;
+
+            if (walkingControl) { map.removeControl(walkingControl); walkingControl = null; }
+
+            // Green Line for Walking
+            walkingControl = L.Routing.control({
+                waypoints: [ L.latLng(studentPos.lat, studentPos.lng), L.latLng(customStationPos.lat, customStationPos.lng) ],
+                createMarker: function() { return null; },
+                addWaypoints: false,
+                draggableWaypoints: false,
+                fitSelectedRoutes: true,
+                lineOptions: {
+                    styles: [{color: '#00ff66', opacity: 0.9, weight: 6}]
+                },
+                show: false 
+            }).addTo(map);
         }
 
         function renderBusList() {
@@ -1086,6 +1149,17 @@
             routePolyline = null;
             routingControl = null;
             studentPos = null;
+            customStationPos = null;
+            walkingControl = null;
+
+            // Load saved station if exists
+            const savedLat = localStorage.getItem('myStationLat');
+            const savedLng = localStorage.getItem('myStationLng');
+            if(savedLat && savedLng) {
+                customStationPos = { lat: parseFloat(savedLat), lng: parseFloat(savedLng) };
+                document.getElementById('btn-start-walk').style.display = 'block';
+                drawCustomStation();
+            }
 
             if (navigator.geolocation) {
                 studentWatchId = navigator.geolocation.watchPosition(pos => {
@@ -1182,11 +1256,8 @@
             }
         }
 
-        // --- NEW UPDATED STUDENT MARKER (GREEN LOCATION PIN) ---
         function updateStudentMarker() {
             if(!studentPos) return;
-            
-            // GREEN PIN WITH STUDENT ICON INSIDE
             const studentHtml = `
                 <div class="map-pin-container">
                     <div class="pin-pulse"></div>
@@ -1194,19 +1265,17 @@
                     <span class="material-symbols-outlined pin-inner-icon-student">person</span>
                 </div>
             `;
-            
             const icon = L.divIcon({ 
                 className: 'custom-student', 
                 html: studentHtml, 
                 iconSize: [50, 50],
-                iconAnchor: [25, 45] // Tip of the pin
+                iconAnchor: [25, 45]
             });
 
             if(studentMarker) studentMarker.setLatLng([studentPos.lat, studentPos.lng]);
             else studentMarker = L.marker([studentPos.lat, studentPos.lng], { icon: icon }).addTo(map);
         }
 
-        // --- NEW UPDATED BUS MARKER (RED LOCATION PIN) ---
         function updateMapDisplay(data, source = 'driver') {
             if (data) {
                 document.getElementById('disp-speed').innerText = Math.round(data.speed) + " KM/H";
@@ -1229,7 +1298,6 @@
                         </div>
                     `;
                 } else {
-                    // RED PIN WITH BUS ICON INSIDE
                     const opacity = data.active ? 1 : 0.5;
                     busHtml = `
                         <div class="map-pin-container" style="opacity: ${opacity}">
@@ -1244,7 +1312,7 @@
                     className: 'custom-bus-marker', 
                     html: busHtml, 
                     iconSize: [50, 50], 
-                    iconAnchor: [25, 45] // Tip of the pin
+                    iconAnchor: [25, 45] 
                 });
 
                 if (busMarker) {
@@ -1257,25 +1325,32 @@
             }
         }
 
-        // --- FIXED ROUTING (MANUAL POLYLINE FOR ZOOM FIX) ---
+        // --- UPDATED ROUTING: TARGETS STATION IF SET ---
         function updatePolylineAndETA() {
             if (!studentPos || !busMarker) return;
             const busLatLng = busMarker.getLatLng();
 
+            // Destination: If customStationPos exists, use that. Else use studentPos.
+            const destLat = customStationPos ? customStationPos.lat : studentPos.lat;
+            const destLng = customStationPos ? customStationPos.lng : studentPos.lng;
+
             if (routingControl) { map.removeControl(routingControl); routingControl = null; }
 
             routingControl = L.Routing.control({
-                waypoints: [ L.latLng(studentPos.lat, studentPos.lng), L.latLng(busLatLng.lat, busLatLng.lng) ],
+                waypoints: [ L.latLng(destLat, destLng), L.latLng(busLatLng.lat, busLatLng.lng) ],
                 createMarker: function() { return null; },
                 addWaypoints: false,
                 draggableWaypoints: false,
-                fitSelectedRoutes: false,
+                fitSelectedRoutes: false, // Don't auto zoom, let user control
                 show: false 
             }).on('routesfound', function(e) {
                 const routes = e.routes;
                 const summary = routes[0].summary;
                 const timeMin = Math.round(summary.totalTime / 60);
-                document.getElementById('disp-eta').innerText = (timeMin > 0 ? timeMin : "< 1") + " MIN";
+                
+                // Update ETA Text based on destination
+                const suffix = customStationPos ? " TO STOP" : " TO YOU";
+                document.getElementById('disp-eta').innerText = (timeMin > 0 ? timeMin : "< 1") + " MIN" + suffix;
 
                 // MANUAL POLYLINE DRAWING (Fixes zoom disappearance)
                 if (routePolyline) map.removeLayer(routePolyline);

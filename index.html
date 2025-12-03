@@ -342,9 +342,10 @@
         /* START WALK BUTTON */
         #btn-start-walk {
             position: absolute; bottom: 80px; left: 50%; transform: translateX(-50%);
-            background: #00ff66; color: black; font-weight: bold;
+            background: #FACC15; /* Changed to Yellow */
+            color: black; font-weight: bold;
             padding: 10px 20px; border-radius: 20px;
-            box-shadow: 0 0 15px rgba(0, 255, 102, 0.5);
+            box-shadow: 0 0 15px rgba(250, 204, 21, 0.5);
             font-family: 'Rajdhani', sans-serif;
             z-index: 998; letter-spacing: 1px;
             display: none; /* Hidden by default until station is set */
@@ -669,7 +670,7 @@
 
         <!-- NEW: START WALK BUTTON -->
         <button id="btn-start-walk" onclick="startWalkingRoute()">
-            START WALK
+            START WALK (PATH)
         </button>
 
         <div id="map"></div>
@@ -799,6 +800,8 @@
         // NEW VARIABLES FOR WALKING STATION
         let customStationPos = null;
         let walkingControl = null;
+        let busPathHistory = []; // Store bus history for green trail
+        let busTrailPolyline = null; // Polyline for green trail
 
         const screens = {
             splash: document.getElementById('screen-splash'),
@@ -884,13 +887,13 @@
             L.marker([customStationPos.lat, customStationPos.lng], { icon: icon }).addTo(map).bindPopup("MY STATION");
         }
 
-        // --- NEW: START WALKING ROUTE ---
+        // --- NEW: START WALKING ROUTE (Updated to YELLOW) ---
         window.startWalkingRoute = function() {
             if(!studentPos || !customStationPos) return;
 
             if (walkingControl) { map.removeControl(walkingControl); walkingControl = null; }
 
-            // Green Line for Walking
+            // Yellow Line for Walking (Student -> Station)
             walkingControl = L.Routing.control({
                 waypoints: [ L.latLng(studentPos.lat, studentPos.lng), L.latLng(customStationPos.lat, customStationPos.lng) ],
                 createMarker: function() { return null; },
@@ -898,7 +901,7 @@
                 draggableWaypoints: false,
                 fitSelectedRoutes: true,
                 lineOptions: {
-                    styles: [{color: '#00ff66', opacity: 0.9, weight: 6}]
+                    styles: [{color: '#FFD700', opacity: 1, weight: 6}] // Changed to Yellow #FFD700
                 },
                 show: false 
             }).addTo(map);
@@ -1151,6 +1154,8 @@
             studentPos = null;
             customStationPos = null;
             walkingControl = null;
+            busPathHistory = []; // Reset history
+            if(busTrailPolyline) { map.removeLayer(busTrailPolyline); busTrailPolyline = null; }
 
             // Load saved station if exists
             const savedLat = localStorage.getItem('myStationLat');
@@ -1288,6 +1293,18 @@
                      statusEl.style.color = "#ff003c";
                 }
 
+                // --- GREEN TRAIL LOGIC (History) ---
+                busPathHistory.push([data.lat, data.lng]);
+                if (busTrailPolyline) map.removeLayer(busTrailPolyline);
+                
+                // If bus is "Missed" or inactive we might want to change color to Red, but for now Green trail for active path.
+                // Draw Green Polyline for history
+                busTrailPolyline = L.polyline(busPathHistory, {
+                    color: '#32CD32', // Green
+                    weight: 6,
+                    opacity: 0.8
+                }).addTo(map);
+
                 let busHtml;
                 if(source === 'crowd') {
                     busHtml = `
@@ -1325,7 +1342,7 @@
             }
         }
 
-        // --- UPDATED ROUTING: TARGETS STATION IF SET ---
+        // --- UPDATED ROUTING: TARGETS STATION IF SET (ORANGE LINE) ---
         function updatePolylineAndETA() {
             if (!studentPos || !busMarker) return;
             const busLatLng = busMarker.getLatLng();
@@ -1355,10 +1372,11 @@
                 // MANUAL POLYLINE DRAWING (Fixes zoom disappearance)
                 if (routePolyline) map.removeLayer(routePolyline);
                 
+                // Orange Line for Pending Route (Bus -> Station)
                 routePolyline = L.polyline(e.routes[0].coordinates, {
-                    color: '#00f3ff',
-                    weight: 4,
-                    opacity: 0.8,
+                    color: '#FF8C00', // Orange
+                    weight: 6,
+                    opacity: 0.9,
                     dashArray: '10, 15', // Dotted Neon Effect
                     lineCap: 'round',
                     lineJoin: 'round'
